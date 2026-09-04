@@ -7,31 +7,52 @@
 
 Есть: Node 22, npm 10, git, scoop, winget.
 **Нет: PHP, Docker, Podman, WSL.** Не пытайся поднять базу в контейнере — ставить нечего.
-Поэтому стек целиком TypeScript, а Postgres ставится нативно.
 
-## 1. Поднять окружение (один раз, ~5 минут)
+**Нативный Postgres на этой машине не ставится.** `scoop install postgresql` проходит,
+но `initdb` падает:
+
+```
+FATAL: invalid byte sequence for encoding "UTF8": 0xd0 0xe0
+```
+
+`0xd0 0xe0` — байты «Ра» в cp1251, то есть кириллица в имени пользователя Windows
+(профиль `C:\Users\<кириллица>`). Не лечится ни ASCII-путём для данных, ни подменой
+USERNAME / TMP / LANG, ни `--locale=C` — проверено трижды. Не трать на это время.
+
+Поэтому в dev база — **PGlite**: настоящий Postgres, собранный в WASM, приезжает
+npm-пакетом. Ставить нечего, сервиса нет, работает на любом пути.
+
+## 1. Поднять окружение (одна команда)
 
 ```bash
-scoop install postgresql          # Postgres 17, нативно, без Docker
-pg_ctl start -D "$(scoop prefix postgresql)/data"
-createdb agora_catalog_<твой-id>  # своя база на воркера, чужие не трогать
+npm install                      # из корня репозитория, workspaces
+npm run -w @agora/db setup       # миграции + категории
 ```
 
-В корне репо `.env`:
+Всё. База в `packages/db/.pgdata/`, она в `.gitignore`. Гонять `setup` можно сколько
+угодно: миграции ведёт штатный мигратор drizzle (таблица `__drizzle_migrations`),
+категории — upsert по slug. Проверено: первый прогон создаёт 72 категории, второй — ноль.
 
+Подключение **только** через `getDb()` из `@agora/db`. Своих пулов и своих клиентов
+PGlite не создавай: там же подключается расширение `pg_trgm`, без которого развалится
+поиск.
+
+```ts
+import { getDb, closeDb, companies } from '@agora/db'
+const db = await getDb()
 ```
-DATABASE_URL=postgres://postgres@127.0.0.1:5432/agora_catalog_<твой-id>
-```
 
-Дальше:
+**В любом CLI-скрипте обязателен `await closeDb()` в конце.** Проверено на живом
+движке: если процесс на PGlite завершится без `close()`, папка `.pgdata` остаётся
+в грязном состоянии, и следующий запуск подвешивается внутри `PGlite.create()`
+наглухо — без ошибки и без таймаута, просто висит. Со стороны это неотлаживаемо,
+поэтому правило жёсткое.
 
-```bash
-npm install                                   # workspaces, из корня
-npm run -w @agora/db push                     # накатить схему в свою базу
-```
+Залипло — `rm -rf packages/db/.pgdata && npm run -w @agora/db setup`.
 
-`push` вместо `migrate` — потому что схему ты не меняешь, тебе нужно только
-получить её в базе.
+Когда появится реальный Postgres на сервере, тот же код пойдёт в него: достаточно
+задать `DATABASE_URL=postgres://...`. Ветку выбора движка в `packages/db/src/index.ts`
+не трогай.
 
 ## 2. Своя ветка и свой worktree
 
