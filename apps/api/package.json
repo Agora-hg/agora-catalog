@@ -1,0 +1,22 @@
+{
+  "name": "@agora/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "enrich:dadata": "tsx src/enrich/cli.ts",
+    "test": "tsx --test test/normalize.test.ts test/match.test.ts test/quota.test.ts test/retry.test.ts test/dadata.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@agora/db": "*",
+    "drizzle-orm": "^0.45.2",
+    "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.19.3",
+    "typescript": "^7.0.2"
+  }
+}

@@ -2,5 +2,15 @@
   "name": "agora-catalog",
   "private": true,
   "workspaces": ["packages/*", "apps/*"],
-  "engines": { "node": ">=22" }
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "enrich:dadata": "tsx apps/api/src/enrich/cli.ts",
+    "test": "npm run -w @agora/api test",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "tsx": "^4.19.3",
+    "typescript": "^7.0.2"
+  }
 }

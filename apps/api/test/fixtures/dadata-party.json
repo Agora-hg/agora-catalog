@@ -1,0 +1,175 @@
+{
+  "ООО АлинаПак": {
+    "suggestions": [
+      {
+        "value": "ООО АЛИНАПАК",
+        "unrestricted_value": "ООО АЛИНАПАК",
+        "data": {
+          "inn": "7701234567",
+          "kpp": "770101001",
+          "ogrn": "1027700000001",
+          "okved": "17.21",
+          "branch_type": "MAIN",
+          "type": "LEGAL",
+          "name": {
+            "full_with_opf": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ АЛИНАПАК",
+            "short_with_opf": "ООО АЛИНАПАК",
+            "full": "АЛИНАПАК",
+            "short": "АЛИНАПАК"
+          },
+          "state": { "status": "ACTIVE" },
+          "address": {
+            "value": "г Москва, ул Такая-то, д 5",
+            "unrestricted_value": "Россия, г Москва, ул Такая-то, д 5",
+            "data": {
+              "city": null,
+              "region": "Москва",
+              "region_with_type": "г Москва",
+              "kladr_id": "7700000000000"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "ПакМастер": {
+    "suggestions": [
+      {
+        "value": "ООО ПАКМАСТЕР",
+        "unrestricted_value": "ООО ПАКМАСТЕР",
+        "data": {
+          "inn": "7707777777",
+          "kpp": "770701001",
+          "ogrn": "1027700777777",
+          "okved": "17.21",
+          "branch_type": "MAIN",
+          "type": "LEGAL",
+          "name": {
+            "full_with_opf": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ ПАКМАСТЕР",
+            "short_with_opf": "ООО ПАКМАСТЕР",
+            "full": "ПАКМАСТЕР",
+            "short": "ПАКМАСТЕР"
+          },
+          "state": { "status": "ACTIVE" },
+          "address": {
+            "value": "г Москва, ул Упаковочная, д 1",
+            "data": {
+              "city": null,
+              "region": "Москва",
+              "kladr_id": "7700000000000"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "ООО МёртваяТара": {
+    "suggestions": [
+      {
+        "value": "ООО МЁРТВАЯТАРА",
+        "data": {
+          "inn": "7706666666",
+          "kpp": "770601001",
+          "ogrn": "1027700666666",
+          "okved": "17.21",
+          "branch_type": "MAIN",
+          "name": {
+            "full_with_opf": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ МЁРТВАЯТАРА",
+            "short_with_opf": "ООО МЁРТВАЯТАРА"
+          },
+          "state": { "status": "LIQUIDATED" },
+          "address": {
+            "value": "г Москва, ул Ликвидаторов, д 1",
+            "data": { "region": "Москва", "kladr_id": "7700000000000" }
+          }
+        }
+      }
+    ]
+  },
+  "ООО КазаньПак": {
+    "suggestions": [
+      {
+        "value": "ООО КАЗАНЬПАК",
+        "data": {
+          "inn": "1651111111",
+          "ogrn": "1021600111111",
+          "kpp": "165101001",
+          "okved": "17.21",
+          "branch_type": "MAIN",
+          "name": {
+            "short_with_opf": "ООО КАЗАНЬПАК",
+            "full_with_opf": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ КАЗАНЬПАК"
+          },
+          "state": { "status": "ACTIVE" },
+          "address": {
+            "value": "г Казань, ул Баумана, д 1",
+            "data": {
+              "city": "Казань",
+              "region": "Татарстан",
+              "kladr_id": "1600000100000"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "ООО ДваБлизнеца": {
+    "suggestions": [
+      {
+        "value": "ООО ДВАБЛИЗНЕЦА",
+        "data": {
+          "inn": "7708000001",
+          "ogrn": "1027700000008",
+          "kpp": "770801001",
+          "okved": "17.21",
+          "branch_type": "MAIN",
+          "name": { "short_with_opf": "ООО ДВАБЛИЗНЕЦА" },
+          "state": { "status": "ACTIVE" },
+          "address": {
+            "value": "г Москва",
+            "data": { "region": "Москва", "kladr_id": "7700000000000" }
+          }
+        }
+      },
+      {
+        "value": "ООО ДВАБЛИЗНЕЦА",
+        "data": {
+          "inn": "7708000002",
+          "ogrn": "1027700000009",
+          "kpp": "770801001",
+          "okved": "46.76",
+          "branch_type": "MAIN",
+          "name": { "short_with_opf": "ООО ДВАБЛИЗНЕЦА" },
+          "state": { "status": "ACTIVE" },
+          "address": {
+            "value": "г Москва",
+            "data": { "region": "Москва", "kladr_id": "7700000000000" }
+          }
+        }
+      }
+    ]
+  },
+  "ООО Реорганизуемый": {
+    "suggestions": [
+      {
+        "value": "ООО РЕОРГАНИЗУЕМЫЙ",
+        "data": {
+          "inn": "7705555555",
+          "ogrn": "1027700555555",
+          "kpp": "770501001",
+          "okved": "17.21",
+          "branch_type": "MAIN",
+          "name": { "short_with_opf": "ООО РЕОРГАНИЗУЕМЫЙ" },
+          "state": { "status": "REORGANIZING" },
+          "address": {
+            "value": "г Москва",
+            "data": { "region": "Москва", "kladr_id": "7700000000000" }
+          }
+        }
+      }
+    ]
+  },
+  "НетВЕгрюл": {
+    "suggestions": []
+  }
+}

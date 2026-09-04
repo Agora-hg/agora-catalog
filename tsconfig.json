@@ -8,7 +8,10 @@
     "skipLibCheck": true,
     "verbatimModuleSyntax": true,
     "types": ["node"],
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "paths": {
+      "@agora/db": ["./packages/db/src/index.ts"]
+    }
   },
-  "include": ["src/**/*.ts", "drizzle.config.ts"]
+  "include": ["packages/*/src/**/*.ts", "apps/*/src/**/*.ts", "apps/*/test/**/*.ts"]
 }
