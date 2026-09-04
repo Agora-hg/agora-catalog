@@ -2,5 +2,16 @@
   "name": "agora-catalog",
   "private": true,
   "workspaces": ["packages/*", "apps/*"],
-  "engines": { "node": ">=22" }
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "import": "tsx apps/api/src/import/cli.ts",
+    "seed": "npm run -w @agora/db seed",
+    "test": "npm run -w @agora/api test",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "tsx": "^4.19.3",
+    "typescript": "^7.0.2"
+  }
 }
