@@ -48,6 +48,7 @@ CREATE TABLE "companies" (
 	"description" text,
 	"description_raw" text,
 	"products_tags" text[],
+	"products_text" text,
 	"status" "company_status" DEFAULT 'unknown' NOT NULL,
 	"is_active" boolean DEFAULT true NOT NULL,
 	"is_verified" boolean DEFAULT false NOT NULL,
@@ -65,7 +66,7 @@ CREATE TABLE "companies" (
 	"last_checked_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"search_vector" "tsvector" GENERATED ALWAYS AS (to_tsvector('russian', coalesce(name,'') || ' ' || coalesce(description,'') || ' ' || coalesce(array_to_string(products_tags, ' '), ''))) STORED
+	"search_vector" "tsvector" GENERATED ALWAYS AS (to_tsvector('russian'::regconfig, coalesce(name,'') || ' ' || coalesce(description,'') || ' ' || coalesce(products_text,''))) STORED
 );
 --> statement-breakpoint
 CREATE TABLE "company_categories" (

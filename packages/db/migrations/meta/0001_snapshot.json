@@ -1,6 +1,6 @@
 {
-  "id": "cf0a855a-a1c9-41a7-86d4-d7512869576d",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "93e09c91-26ac-438e-917a-ca1cdbef1127",
+  "prevId": "cf0a855a-a1c9-41a7-86d4-d7512869576d",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -60,9 +60,9 @@
             }
           ],
           "isUnique": true,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {},
@@ -147,9 +147,9 @@
             }
           ],
           "isUnique": true,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         },
         "categories_parent_idx": {
           "name": "categories_parent_idx",
@@ -162,9 +162,9 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {},
@@ -426,8 +426,8 @@
           "primaryKey": false,
           "notNull": false,
           "generated": {
-            "as": "to_tsvector('russian'::regconfig, coalesce(name,'') || ' ' || coalesce(description,'') || ' ' || coalesce(products_text,''))",
-            "type": "stored"
+            "type": "stored",
+            "as": "to_tsvector('russian'::regconfig, coalesce(name,'') || ' ' || coalesce(description,'') || ' ' || coalesce(products_text,''))"
           }
         }
       },
@@ -443,9 +443,9 @@
             }
           ],
           "isUnique": true,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         },
         "companies_inn_key": {
           "name": "companies_inn_key",
@@ -458,10 +458,10 @@
             }
           ],
           "isUnique": true,
-          "where": "\"companies\".\"inn\" is not null",
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "where": "\"companies\".\"inn\" is not null",
+          "concurrently": false
         },
         "companies_yandex_oid_key": {
           "name": "companies_yandex_oid_key",
@@ -474,10 +474,10 @@
             }
           ],
           "isUnique": true,
-          "where": "\"companies\".\"yandex_oid\" is not null",
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "where": "\"companies\".\"yandex_oid\" is not null",
+          "concurrently": false
         },
         "companies_status_idx": {
           "name": "companies_status_idx",
@@ -490,9 +490,9 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         },
         "companies_city_idx": {
           "name": "companies_city_idx",
@@ -505,24 +505,24 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         },
         "companies_search_idx": {
           "name": "companies_search_idx",
           "columns": [
             {
               "expression": "\"search_vector\"",
-              "asc": true,
               "isExpression": true,
+              "asc": true,
               "nulls": "last"
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "gin",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {},
@@ -568,37 +568,37 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "company_categories_company_id_companies_id_fk": {
           "name": "company_categories_company_id_companies_id_fk",
           "tableFrom": "company_categories",
-          "tableTo": "companies",
           "columnsFrom": [
             "company_id"
           ],
+          "tableTo": "companies",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "company_categories_category_id_categories_id_fk": {
           "name": "company_categories_category_id_categories_id_fk",
           "tableFrom": "company_categories",
-          "tableTo": "categories",
           "columnsFrom": [
             "category_id"
           ],
+          "tableTo": "categories",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -697,9 +697,9 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         },
         "company_claims_status_idx": {
           "name": "company_claims_status_idx",
@@ -712,24 +712,24 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "company_claims_company_id_companies_id_fk": {
           "name": "company_claims_company_id_companies_id_fk",
           "tableFrom": "company_claims",
-          "tableTo": "companies",
           "columnsFrom": [
             "company_id"
           ],
+          "tableTo": "companies",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -794,24 +794,24 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "company_sources_company_id_companies_id_fk": {
           "name": "company_sources_company_id_companies_id_fk",
           "tableFrom": "company_sources",
-          "tableTo": "companies",
           "columnsFrom": [
             "company_id"
           ],
+          "tableTo": "companies",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -917,9 +917,9 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         },
         "events_visitor_idx": {
           "name": "events_visitor_idx",
@@ -932,9 +932,9 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         },
         "events_event_idx": {
           "name": "events_event_idx",
@@ -947,9 +947,9 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         },
         "events_company_idx": {
           "name": "events_company_idx",
@@ -962,37 +962,37 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "events_company_id_companies_id_fk": {
           "name": "events_company_id_companies_id_fk",
           "tableFrom": "events",
-          "tableTo": "companies",
           "columnsFrom": [
             "company_id"
           ],
+          "tableTo": "companies",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         },
         "events_category_id_categories_id_fk": {
           "name": "events_category_id_categories_id_fk",
           "tableFrom": "events",
-          "tableTo": "categories",
           "columnsFrom": [
             "category_id"
           ],
+          "tableTo": "categories",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {},
@@ -1080,9 +1080,9 @@
             }
           ],
           "isUnique": true,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         },
         "raw_yandex_orgs_processed_idx": {
           "name": "raw_yandex_orgs_processed_idx",
@@ -1095,24 +1095,24 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "raw_yandex_orgs_company_id_companies_id_fk": {
           "name": "raw_yandex_orgs_company_id_companies_id_fk",
           "tableFrom": "raw_yandex_orgs",
-          "tableTo": "companies",
           "columnsFrom": [
             "company_id"
           ],
+          "tableTo": "companies",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {},
@@ -1196,9 +1196,9 @@
             }
           ],
           "isUnique": true,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         },
         "request_companies_status_idx": {
           "name": "request_companies_status_idx",
@@ -1211,37 +1211,37 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "request_companies_request_id_requests_id_fk": {
           "name": "request_companies_request_id_requests_id_fk",
           "tableFrom": "request_companies",
-          "tableTo": "requests",
           "columnsFrom": [
             "request_id"
           ],
+          "tableTo": "requests",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "request_companies_company_id_companies_id_fk": {
           "name": "request_companies_company_id_companies_id_fk",
           "tableFrom": "request_companies",
-          "tableTo": "companies",
           "columnsFrom": [
             "company_id"
           ],
+          "tableTo": "companies",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -1374,9 +1374,9 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         },
         "requests_created_idx": {
           "name": "requests_created_idx",
@@ -1389,24 +1389,24 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "requests_category_id_categories_id_fk": {
           "name": "requests_category_id_categories_id_fk",
           "tableFrom": "requests",
-          "tableTo": "categories",
           "columnsFrom": [
             "category_id"
           ],
+          "tableTo": "categories",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {},
@@ -1496,37 +1496,37 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "supplier_responses_request_id_requests_id_fk": {
           "name": "supplier_responses_request_id_requests_id_fk",
           "tableFrom": "supplier_responses",
-          "tableTo": "requests",
           "columnsFrom": [
             "request_id"
           ],
+          "tableTo": "requests",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "supplier_responses_company_id_companies_id_fk": {
           "name": "supplier_responses_company_id_companies_id_fk",
           "tableFrom": "supplier_responses",
-          "tableTo": "companies",
           "columnsFrom": [
             "company_id"
           ],
+          "tableTo": "companies",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {},
@@ -1614,10 +1614,10 @@
     }
   },
   "schemas": {},
+  "views": {},
   "sequences": {},
   "roles": {},
   "policies": {},
-  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

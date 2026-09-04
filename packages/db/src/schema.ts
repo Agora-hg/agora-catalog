@@ -121,6 +121,14 @@ export const companies = pgTable(
 
     /** Обобщённо, какие товары есть. Плоские теги, не характеристики. Пополняет Стас в панели. */
     productsTags: text('products_tags').array(),
+    /**
+     * Те же теги строкой — ТОЛЬКО чтобы попасть в поиск.
+     * Обязан заполняться везде, где меняются productsTags: импортёр, панель, обогащение.
+     * Почему не array_to_string прямо в generated-колонке: она помечена STABLE
+     * (`provolatile = 's'`), а generated-выражение требует IMMUTABLE — Postgres падает
+     * с `generation expression is not immutable`. Проверено на живом движке, не гипотеза.
+     */
+    productsText: text('products_text'),
 
     status: companyStatus('status').notNull().default('unknown'),
     isActive: boolean('is_active').notNull().default(true),
@@ -159,7 +167,7 @@ export const companies = pgTable(
      * PG FTS с русской морфологией, для V0 этого хватает с запасом (пункт 6 спеки).
      */
     searchVector: tsvector('search_vector').generatedAlwaysAs(
-      sql`to_tsvector('russian', coalesce(name,'') || ' ' || coalesce(description,'') || ' ' || coalesce(array_to_string(products_tags, ' '), ''))`,
+      sql`to_tsvector('russian'::regconfig, coalesce(name,'') || ' ' || coalesce(description,'') || ' ' || coalesce(products_text,''))`,
     ),
   },
   (t) => [
