@@ -1,3 +1,10 @@
+import { eq } from 'drizzle-orm'
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
+import * as schema from './schema'
+import { categories } from './schema'
+
+type SeedDb = NodePgDatabase<typeof schema>
+
 /**
  * Дерево категорий V0.
  *
@@ -226,3 +233,27 @@ export const CATEGORY_SEED: CategorySeed[] = [
     match: ['оборудован', 'станок', 'упаковочная машин', 'запайщик', 'диспенсер'],
   },
 ]
+
+export async function seedCategories(db: SeedDb): Promise<void> {
+  let parentOrder = 0
+  for (const parent of CATEGORY_SEED) {
+    const parentRow = await upsertCategory(db, parent.slug, parent.name, null, parentOrder++)
+    let childOrder = 0
+    for (const child of parent.children ?? []) {
+      await upsertCategory(db, child.slug, child.name, parentRow.id, childOrder++)
+    }
+  }
+}
+
+async function upsertCategory(
+  db: SeedDb,
+  slug: string,
+  name: string,
+  parentId: string | null,
+  sortOrder: number,
+) {
+  const existing = await db.select().from(categories).where(eq(categories.slug, slug)).limit(1)
+  if (existing[0]) return existing[0]
+  const [row] = await db.insert(categories).values({ slug, name, parentId, sortOrder }).returning()
+  return row
+}
