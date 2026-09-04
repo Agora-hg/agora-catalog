@@ -1,0 +1,6 @@
+{
+  "name": "agora-catalog",
+  "private": true,
+  "workspaces": ["packages/*", "apps/*"],
+  "engines": { "node": ">=22" }
+}
