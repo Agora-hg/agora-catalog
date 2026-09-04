@@ -2,5 +2,9 @@
   "name": "agora-catalog",
   "private": true,
   "workspaces": ["packages/*", "apps/*"],
-  "engines": { "node": ">=22" }
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "typecheck": "npm run typecheck -w @agora/db && npm run typecheck -w @agora/api && npm run typecheck -w @agora/web",
+    "test": "npm run test -w @agora/api && npm run test -w @agora/web"
+  }
 }
