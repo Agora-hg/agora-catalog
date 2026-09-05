@@ -15,6 +15,20 @@
       "when": 1788547118839,
       "tag": "0001_trgm",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788637437061,
+      "tag": "0002_analytics_aggregates",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788637441050,
+      "tag": "0003_aggregates_unique_key",
+      "breakpoints": true
     }
   ]
 }

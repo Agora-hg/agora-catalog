@@ -16,6 +16,7 @@ import { sql } from 'drizzle-orm'
 import {
   boolean,
   customType,
+  date,
   doublePrecision,
   index,
   integer,
@@ -392,6 +393,40 @@ export const events = pgTable(
     index('events_visitor_idx').on(t.visitorId),
     index('events_event_idx').on(t.event),
     index('events_company_idx').on(t.companyId),
+  ],
+)
+
+/**
+ * Суточные агрегаты аналитики. Просил TASK-011 — правильно просил: без них
+ * ретенция теряет историю, а с ними сырые события можно спокойно резать через 90 дней.
+ *
+ * Одна строка = один срез за день. Ключ составной и с `NULLS NOT DISTINCT`,
+ * иначе Postgres считает две строки с NULL в company_id разными, и upsert
+ * наплодит дублей на каждом прогоне джобы.
+ *
+ * `query` заполняется только для поисковых событий; пустой поиск пишем событием
+ * `search_zero` — это самый ценный отчёт: что люди ищут и НЕ находят.
+ */
+export const eventDailyAggregates = pgTable(
+  'event_daily_aggregates',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    day: date('day').notNull(),
+    event: text('event').notNull(),
+    companyId: uuid('company_id').references(() => companies.id, { onDelete: 'set null' }),
+    categoryId: uuid('category_id').references(() => categories.id, { onDelete: 'set null' }),
+    query: text('query'),
+    count: integer('count').notNull().default(0),
+    uniqueVisitors: integer('unique_visitors').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    // Уникальный ключ создаётся отдельной миграцией: нужен NULLS NOT DISTINCT,
+    // а `.nullsNotDistinct()` в текущей версии drizzle-kit отсутствует.
+    // Без него две строки с NULL в company_id считаются разными, и upsert
+    // джобы наплодит дублей на каждом прогоне.
+    index('event_daily_aggregates_day_idx').on(t.day),
+    index('event_daily_aggregates_event_idx').on(t.event),
   ],
 )
 
