@@ -6,9 +6,18 @@ Wants=postgresql.service
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/agora-catalog
+WorkingDirectory=/opt/agora-catalog/apps/api
 EnvironmentFile=/opt/agora-catalog/.env
-ExecStart=/usr/bin/node apps/api/dist/server.js
+# Запуск через tsx, а НЕ через собранный dist.
+#
+# Импорты внутри apps/api указывают на файлы с расширением .ts
+# (`from './admin/routes.ts'`) — это рабочая схема для tsx, но она разваливается
+# при компиляции в JS: в эмитированном коде импорт так и остаётся .ts, а такого
+# файла рядом нет. Именно на этом упал деплой на Vercel:
+#   Cannot find module '/var/task/apps/api/src/admin/routes.ts'
+#   imported from /var/task/apps/api/src/app.js
+# Здесь были бы те же грабли. Node 22 + tsx выполняет TypeScript напрямую.
+ExecStart=/usr/bin/npx tsx src/index.ts
 Restart=always
 RestartSec=5
 User=www-data

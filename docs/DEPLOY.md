@@ -50,7 +50,7 @@ sudo -u postgres createdb agora_catalog -O agora_catalog
 
 # 2. код
 git clone https://github.com/Agora-hg/agora-catalog.git /opt/agora-catalog
-cd /opt/agora-catalog && npm ci && npm run build -w @agora/api
+cd /opt/agora-catalog && npm ci        # сборки нет: API запускается через tsx, см. ниже
 cp .env.example .env && nano .env      # DATABASE_URL, CORS_ORIGINS, IP_HASH_SALT
 
 # 3. схема и категории
@@ -71,6 +71,32 @@ nginx -t && systemctl reload nginx
 # 6. бэкапы
 echo '15 4 * * * /opt/agora-catalog/deploy/backup.sh >> /var/log/agora-catalog/backup.log 2>&1' | crontab -
 ```
+
+## Почему API запускается через tsx, а не из dist
+
+Импорты внутри `apps/api` указывают на файлы с расширением `.ts`
+(`from './admin/routes.ts'`). Для tsx это рабочая схема, но при компиляции в JS
+она разваливается: в собранном коде импорт остаётся `.ts`, а файла рядом нет.
+Проверено дорогой ценой — именно так упал первый деплой фронта на Vercel,
+когда он по ошибке собрал `apps/api`:
+
+```
+Cannot find module '/var/task/apps/api/src/admin/routes.ts'
+imported from /var/task/apps/api/src/app.js
+```
+
+Node 22 плюс tsx выполняет TypeScript напрямую, `npm run build` для API не нужен.
+Если когда-нибудь понадобится настоящая сборка — сначала переписать импорты
+на расширение `.js` (так требует ESM после компиляции), это отдельная задача.
+
+## Vercel: Root Directory обязателен
+
+В настройках проекта на Vercel **Root Directory = `apps/web`**. Без этого Vercel
+сканирует монорепо, находит `apps/api` и пытается поднять бэкенд как serverless-функцию —
+получаем FUNCTION_INVOCATION_FAILED на всех маршрутах, включая `/robots.txt`.
+
+Бэкенду на Vercel делать нечего и по существу: там персональные данные заявок
+и операторская панель, они живут только на сервере в РФ (см. ниже).
 
 ## CORS — не забыть, иначе фронт не увидит ответов
 
