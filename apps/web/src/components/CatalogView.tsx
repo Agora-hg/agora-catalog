@@ -4,6 +4,7 @@ import { breadcrumbJsonLd, collectionPageJsonLd, itemListJsonLd } from '@/lib/sc
 import type { Breadcrumb, CategoryNode, CompanyListResponse } from '@/lib/types'
 import { Breadcrumbs } from './Breadcrumbs'
 import { CompanyCard } from './CompanyCard'
+import { IconCheck } from './icons'
 import { Filters } from './Filters'
 import { JsonLd } from './JsonLd'
 import { Pagination } from './Pagination'
@@ -59,10 +60,22 @@ export function CatalogView(props: {
         «лучшие цены», которых мы не проверяем.
       */}
       <ul className="trust">
-        <li>{list.total} поставщиков</li>
-        <li>Проверяем контакты вручную</li>
-        <li>Адреса и телефоны с карт</li>
-        <li>Бесплатно и без регистрации</li>
+        <li>
+          <IconCheck />
+          {list.total} поставщиков
+        </li>
+        <li>
+          <IconCheck />
+          Проверяем контакты вручную
+        </li>
+        <li>
+          <IconCheck />
+          Адреса и телефоны с карт
+        </li>
+        <li>
+          <IconCheck />
+          Бесплатно и без регистрации
+        </li>
       </ul>
 
       <div className="catalog">

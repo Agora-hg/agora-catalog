@@ -1,6 +1,7 @@
 import { formatCheckedAt } from '@/lib/format'
 import { categoryHref, companyHref } from '@/lib/paths'
 import type { CompanyCard as CompanyCardType, CompanyDetail } from '@/lib/types'
+import { IconCheck, IconExternal, IconPin, IconVerified } from './icons'
 import { Requisites } from './Requisites'
 
 /**
@@ -50,15 +51,17 @@ export function CompanyCard(props: {
           <h2>
             <a href={moreHref}>{company.name}</a>
             {company.is_verified ? (
-              <span className="check" title="Проверена вручную" aria-label="Проверена вручную">
-                ✓
+              <span className="check" title="Проверена вручную">
+                <IconVerified />
+                <span className="sr-only">Проверена вручную</span>
               </span>
             ) : null}
           </h2>
-          {company.address ? (
-            <p className="address">{company.address}</p>
-          ) : company.city ? (
-            <p className="address">{company.city}</p>
+          {company.address || company.city ? (
+            <p className="address">
+              <IconPin />
+              <span>{company.address ?? company.city}</span>
+            </p>
           ) : null}
         </div>
       </div>
@@ -81,7 +84,12 @@ export function CompanyCard(props: {
       ) : null}
 
       <div className="card-foot">
-        {checked ? <p className="checked">Информация проверена {checked}</p> : null}
+        {checked ? (
+          <p className="checked">
+            <IconCheck />
+            Информация проверена {checked}
+          </p>
+        ) : null}
         <div className="actions">
           <a className="btn" href={moreHref} data-analytics="card_expand" data-slug={company.slug}>
             Подробнее
