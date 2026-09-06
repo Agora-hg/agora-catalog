@@ -50,8 +50,9 @@ sudo -u postgres createdb agora_catalog -O agora_catalog
 
 # 2. код
 git clone https://github.com/Agora-hg/agora-catalog.git /opt/agora-catalog
-cd /opt/agora-catalog && npm ci        # сборки нет: API запускается через tsx, см. ниже
-cp .env.example .env && nano .env      # DATABASE_URL, CORS_ORIGINS, IP_HASH_SALT
+cd /opt/agora-catalog && npm ci
+# Сборки dist/ у API нет (noEmit): systemd стартует tsx apps/api/src/index.ts
+cp .env.example .env && nano .env      # DATABASE_URL, CORS_ORIGINS, IP_HASH_SALT, SESSION_SECRET
 
 # 3. схема и категории
 npm run -w @agora/db setup             # миграции + 72 категории
@@ -68,8 +69,9 @@ ln -s /etc/nginx/sites-available/agora-catalog /etc/nginx/sites-enabled/
 certbot certonly --webroot -w /var/www/html -d agora-catalog.178.88.115.213.sslip.io
 nginx -t && systemctl reload nginx
 
-# 6. бэкапы
-echo '15 4 * * * /opt/agora-catalog/deploy/backup.sh >> /var/log/agora-catalog/backup.log 2>&1' | crontab -
+# 6. бэкапы. На этом сервере crontab уже чужой — НЕ `echo | crontab -`,
+# это затрёт trek/tg-tool/fcor/agora-backend. Только дописать строку.
+(crontab -l 2>/dev/null; echo '15 4 * * * /opt/agora-catalog/deploy/backup.sh >> /var/log/agora-catalog/backup.log 2>&1') | crontab -
 ```
 
 ## Почему API запускается через tsx, а не из dist
@@ -88,7 +90,6 @@ imported from /var/task/apps/api/src/app.js
 Node 22 плюс tsx выполняет TypeScript напрямую, `npm run build` для API не нужен.
 Если когда-нибудь понадобится настоящая сборка — сначала переписать импорты
 на расширение `.js` (так требует ESM после компиляции), это отдельная задача.
-
 ## Vercel: Root Directory обязателен
 
 В настройках проекта на Vercel **Root Directory = `apps/web`**. Без этого Vercel
@@ -97,6 +98,23 @@ Node 22 плюс tsx выполняет TypeScript напрямую, `npm run bu
 
 Бэкенду на Vercel делать нечего и по существу: там персональные данные заявок
 и операторская панель, они живут только на сервере в РФ (см. ниже).
+## Журнал миграций: не накатывать SQL мимо мигратора
+
+На сервере схему сначала подняли напрямую через `psql`, минуя drizzle. В итоге
+таблицы были, а `drizzle.__drizzle_migrations` не существовало — мигратор считал,
+что не применено НИЧЕГО. Из-за этого миграция 0004 (триггер `products_text`)
+не встала, и воркеру пришлось вешать триггер руками, а 0005 не встала вовсе.
+
+Журнал восстановлен 2026-09-06: записи перенесены с локальной базы, недостающая
+0005 применена. Впредь схему на сервере трогать **только** через
+`npm run -w @agora/db setup` — он идемпотентен и ведёт журнал сам.
+
+Проверка состояния:
+
+```sql
+select count(*) from drizzle.__drizzle_migrations;              -- должно совпадать с числом файлов в migrations/
+select count(*) from pg_trigger where tgname='companies_products_text';  -- 1
+```
 
 ## CORS — не забыть, иначе фронт не увидит ответов
 
@@ -117,10 +135,7 @@ CORS_ORIGINS=https://<проект>.vercel.app,http://localhost:3000
 - `scp` иногда молча не доезжает (RC=0, файла нет) — проверять `wc -c` после заливки.
 - Вложенный heredoc внутри base64-скрипта падает молча.
 - `journalctl` в составной команде подвешивает вызов — запускать отдельно.
-- **`sshpass` на машине владельца НЕ РАБОТАЕТ вообще** (winget-сборка): пароль верный,
-  сервер отвечает `Permission denied`. Заходить через plink из PuTTY с пиннингом хоста:
-  `plink -ssh -pw '<pw>' -hostkey 'SHA256:HlgeLGDPQG1UMvF9s+Fws3OPUw5PS7IhKr8q1KRmatQ' root@178.88.115.213 'cmd'`
-- Кавычки внутри команды plink съедаются: SQL гонять файлом через stdin, не строкой.
+- `sshpass` отбивает первые 1-2 попытки пароля, потом входит. Это не ошибка.
 - В `curl`-тестах всегда `-o /dev/null`.
 
 ## Персональные данные — риск, который надо знать

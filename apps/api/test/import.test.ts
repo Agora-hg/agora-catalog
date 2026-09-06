@@ -78,6 +78,7 @@ describe('importer on 20-row fixture', { timeout: 60_000, concurrency: 1 }, () =
     const alina = rows.find((c) => c.inn === '7701234567')
     assert.ok(alina)
     assert.equal(alina.website, 'https://alina-pack.com')
+    assert.ok(alina.productsTags?.some((t) => /гофрокороб/i.test(t)))
     assert.equal(alina.address?.startsWith('Москва'), false)
     assert.equal(alina.city, 'Москва')
     assert.equal(alina.region, 'Москва')

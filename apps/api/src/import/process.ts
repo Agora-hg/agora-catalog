@@ -9,7 +9,7 @@ import {
 } from '@agora/db'
 import { CompanyIndex } from './dedup.ts'
 import { loadBatch, markRawProcessed } from './ingest.ts'
-import { matchCategorySlugs } from './map-categories.ts'
+import { matchCategorySlugs, namesForSlugs } from './map-categories.ts'
 import { normalizeName, normalizeOrg, websiteDomain } from './normalize.ts'
 import { slugify } from './slug.ts'
 import type { ExistingCompany, ImportStats, NormalizedOrg, YandexOrgRaw } from './types.ts'
@@ -67,17 +67,33 @@ async function uniqueSlug(db: Db, base: string, taken: Set<string>): Promise<str
   return slug
 }
 
-async function attachCategories(
-  db: Db,
-  companyId: string,
-  org: NormalizedOrg,
-  slugToId: Map<string, string>,
-): Promise<boolean> {
-  const slugs = matchCategorySlugs([
+function categorySlugsFor(org: NormalizedOrg): string[] {
+  return matchCategorySlugs([
     ...org.yandexCategories,
     org.name,
     org.descriptionRaw,
+    ...org.featureTags,
   ])
+}
+
+function productTagsFor(org: NormalizedOrg, slugs: string[]): string[] {
+  const seen = new Set<string>()
+  const tags: string[] = []
+  for (const tag of [...org.featureTags, ...namesForSlugs(slugs)]) {
+    const folded = tag.trim().toLowerCase().replace(/ё/g, 'е')
+    if (!folded || seen.has(folded)) continue
+    seen.add(folded)
+    tags.push(tag.trim())
+  }
+  return tags
+}
+
+async function attachCategories(
+  db: Db,
+  companyId: string,
+  slugs: string[],
+  slugToId: Map<string, string>,
+): Promise<boolean> {
   if (!slugs.length) return false
   const values = slugs
     .map((slug) => slugToId.get(slug))
@@ -116,6 +132,7 @@ async function insertCompany(
   db: Db,
   org: NormalizedOrg,
   slug: string,
+  tags: string[],
 ): Promise<string> {
   const [row] = await db
     .insert(companies)
@@ -134,6 +151,7 @@ async function insertCompany(
       phones: org.phones.length ? org.phones : null,
       // description stays null — generated later by the lead
       descriptionRaw: org.descriptionRaw,
+      productsTags: tags.length ? tags : null,
       status: 'active',
       sourceUrl: org.sourceUrl,
       yandexOid: org.oid,
@@ -147,7 +165,12 @@ async function insertCompany(
   return row.id
 }
 
-async function updateCompany(db: Db, existing: ExistingCompany, org: NormalizedOrg): Promise<void> {
+async function updateCompany(
+  db: Db,
+  existing: ExistingCompany,
+  org: NormalizedOrg,
+  tags: string[],
+): Promise<void> {
   const inn = existing.inn ?? org.inn
   const yandexOid = existing.yandexOid ?? org.oid
   await db
@@ -165,6 +188,7 @@ async function updateCompany(db: Db, existing: ExistingCompany, org: NormalizedO
       phone: org.phone ?? undefined,
       phones: org.phones.length ? org.phones : undefined,
       descriptionRaw: org.descriptionRaw,
+      productsTags: tags.length ? tags : null,
       status: 'active',
       sourceUrl: org.sourceUrl ?? undefined,
       yandexOid,
@@ -235,10 +259,12 @@ export async function processBatch(db: Db, batch: string): Promise<Omit<ImportSt
     }
 
     try {
+      const slugs = categorySlugsFor(org)
+      const tags = productTagsFor(org, slugs)
       const match = index.lookup(incomingKeys(org))
       let companyId: string
       if (match) {
-        await updateCompany(db, match, org)
+        await updateCompany(db, match, org, tags)
         companyId = match.id
         updated++
         index.add({
@@ -252,7 +278,7 @@ export async function processBatch(db: Db, batch: string): Promise<Omit<ImportSt
         })
       } else {
         const slug = await uniqueSlug(db, slugify(org.name, org.slugHint ?? org.oid), takenSlugs)
-        companyId = await insertCompany(db, org, slug)
+        companyId = await insertCompany(db, org, slug, tags)
         created++
         index.add({
           id: companyId,
@@ -267,7 +293,7 @@ export async function processBatch(db: Db, batch: string): Promise<Omit<ImportSt
       }
 
       await addSource(db, companyId, org, raw)
-      await attachCategories(db, companyId, org, slugToId)
+      await attachCategories(db, companyId, slugs, slugToId)
       seen.add(companyId)
       await markRawProcessed(db, row.id, companyId, null)
     } catch (err) {

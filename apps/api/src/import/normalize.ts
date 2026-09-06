@@ -158,6 +158,26 @@ export function normalizeEmail(input: string | null | undefined): string | null 
   return email
 }
 
+const NON_PRODUCT_FEATURE =
+  /^(способ оплаты|доставка|самовывоз|оплата картой|акции|доступность|парковка|лифт|инн)$/i
+
+/** Товарные ключи features с Я.Карт. Оплату, доставку и ИНН в теги не тащим. */
+export function featureTags(features: Record<string, unknown> | null | undefined): string[] {
+  if (!features || typeof features !== 'object') return []
+  const tags: string[] = []
+  const seen = new Set<string>()
+  for (const [key, value] of Object.entries(features)) {
+    const k = key.trim()
+    if (!k || NON_PRODUCT_FEATURE.test(k)) continue
+    if (value === false || value == null || value === '') continue
+    const fold = k.toLowerCase().replace(/ё/g, 'е')
+    if (seen.has(fold)) continue
+    seen.add(fold)
+    tags.push(k)
+  }
+  return tags
+}
+
 export function normalizeOrg(raw: YandexOrgRaw): NormalizedOrg | { error: string } {
   const oid = raw.oid?.trim()
   if (!oid) return { error: 'missing oid' }
@@ -201,6 +221,7 @@ export function normalizeOrg(raw: YandexOrgRaw): NormalizedOrg | { error: string
         : null,
     descriptionRaw: raw.description_raw ?? null,
     yandexCategories: (raw.categories ?? []).filter((c): c is string => Boolean(c)),
+    featureTags: featureTags(raw.features ?? null),
     nameNorm: normalizeName(name),
     scrapedAt,
   }
