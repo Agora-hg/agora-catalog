@@ -1,5 +1,5 @@
 import { CatalogView } from '@/components/CatalogView'
-import { fetchAllCategorySlugs, fetchCategories, fetchCompanies } from '@/lib/api'
+import { fetchCategories, fetchCompanies } from '@/lib/api'
 import { findCategory } from '@/lib/categories'
 import { MOSCOW } from '@/lib/cities'
 import { firstParam, parsePage } from '@/lib/format'
@@ -8,13 +8,21 @@ import { categoryMeta } from '@/lib/seo'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-export const revalidate = 900
+/**
+ * Рендер на сервере по запросу, а не ISR.
+ *
+ * Причина: страница читает searchParams (город, тип, сортировка, страница),
+ * а это несовместимо с generateStaticParams — Next падает с DYNAMIC_SERVER_USAGE.
+ * Ловится не сразу: пока API недоступен, generateStaticParams отдаёт пустой список,
+ * сборка проходит, и 500 прилетает только на живом запросе.
+ *
+ * Для SEO это не потеря: роботу важен готовый HTML в ответе, а он есть.
+ * Кэш живёт на стороне API (10 минут), трафика в V0 всё равно нет.
+ * Если понадобится ISR — фильтры надо будет унести на клиент, а не возвращать
+ * generateStaticParams обратно.
+ */
+export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
-
-export async function generateStaticParams() {
-  const slugs = await fetchAllCategorySlugs()
-  return slugs.map((slug) => ({ slug }))
-}
 
 type Props = {
   params: Promise<{ slug: string }>

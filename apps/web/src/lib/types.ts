@@ -51,6 +51,12 @@ export type CompanyListResponse = {
   total: number
   page: number
   per_page: number
+  /**
+   * true — API не ответил, отдаём пустую витрину вместо падения.
+   * Страница обязана открыться с кодом 200: за 500 поисковик выбрасывает
+   * страницы из индекса, а SEO здесь — весь смысл продукта.
+   */
+  unavailable?: boolean
 }
 
 export type CompanyListQuery = {

@@ -3,6 +3,9 @@ import { DEFAULT_PER_PAGE, REVALIDATE_SECONDS, getServerApiUrl, useMockApi } fro
 import { mockGet } from './mock'
 import type { CategoryNode, CompanyDetail, CompanyListQuery, CompanyListResponse } from './types'
 
+/** API недоступен целиком: сеть, таймаут, 5xx. Не то же самое, что 404. */
+export class ApiUnavailableError extends Error {}
+
 class ApiError extends Error {
   constructor(
     message: string,
@@ -28,31 +31,63 @@ function buildQuery(params: CompanyListQuery): string {
 async function apiGet<T>(path: string): Promise<T> {
   if (useMockApi()) return mockGet(path) as T
 
-  const res = await fetch(`${getServerApiUrl()}${path}`, {
-    headers: { accept: 'application/json' },
-    next: { revalidate: REVALIDATE_SECONDS },
-  })
+  let res: Response
+  try {
+    res = await fetch(`${getServerApiUrl()}${path}`, {
+      headers: { accept: 'application/json' },
+      next: { revalidate: REVALIDATE_SECONDS },
+      signal: AbortSignal.timeout(8000),
+    })
+  } catch (err) {
+    // Сеть, DNS, таймаут, неверный адрес в переменной окружения.
+    throw new ApiUnavailableError(`API недоступен: ${path} (${String(err)})`)
+  }
 
   if (res.status === 404) {
     throw new ApiError('not found', 404)
   }
+  if (res.status >= 500) {
+    throw new ApiUnavailableError(`API ${path} → ${res.status}`)
+  }
   if (!res.ok) {
     throw new ApiError(`API ${path} → ${res.status}`, res.status)
   }
-  return (await res.json()) as T
+  try {
+    return (await res.json()) as T
+  } catch {
+    throw new ApiUnavailableError(`API ${path}: ответ не JSON`)
+  }
 }
 
 export async function fetchCategories(): Promise<CategoryNode[]> {
-  const data = await apiGet<CategoryNode[] | { items: CategoryNode[] }>('/categories')
-  return Array.isArray(data) ? data : data.items
+  try {
+    const data = await apiGet<CategoryNode[] | { items: CategoryNode[] }>('/categories')
+    return Array.isArray(data) ? data : data.items
+  } catch (err) {
+    if (err instanceof ApiUnavailableError) {
+      console.error('[categories]', err.message)
+      return []
+    }
+    throw err
+  }
 }
 
 export async function fetchCompanies(params: CompanyListQuery = {}): Promise<CompanyListResponse> {
   const query: CompanyListQuery = { per_page: DEFAULT_PER_PAGE, page: 1, ...params }
-  if (query.q && !query.category && !query.city) {
-    return apiGet<CompanyListResponse>(`/search${buildQuery(query)}`)
+  const path = query.q && !query.category && !query.city
+    ? `/search${buildQuery(query)}`
+    : `/companies${buildQuery(query)}`
+  try {
+    return await apiGet<CompanyListResponse>(path)
+  } catch (err) {
+    // Недоступность API не должна ронять страницу в 500: отдаём пустую витрину
+    // с кодом 200 и пометкой. Пятисотка стоит нам выпадения из индекса.
+    if (err instanceof ApiUnavailableError) {
+      console.error('[catalog]', err.message)
+      return { items: [], total: 0, page: query.page ?? 1, per_page: query.per_page ?? DEFAULT_PER_PAGE, unavailable: true }
+    }
+    throw err
   }
-  return apiGet<CompanyListResponse>(`/companies${buildQuery(query)}`)
 }
 
 export async function fetchCompany(slug: string): Promise<CompanyDetail | null> {
@@ -61,6 +96,12 @@ export async function fetchCompany(slug: string): Promise<CompanyDetail | null> 
     return data ?? null
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return null
+    // Недоступный API на карточке компании — это 404, а не 500: страница
+    // отрисуется штатной «не найдено», сайт продолжит работать.
+    if (err instanceof ApiUnavailableError) {
+      console.error('[company]', err.message)
+      return null
+    }
     if (useMockApi()) return null
     throw err
   }
@@ -72,6 +113,7 @@ export async function fetchAllCompanySlugs(): Promise<string[]> {
   const perPage = 100
   for (;;) {
     const res = await fetchCompanies({ page, per_page: perPage })
+    if (res.unavailable) break
     for (const item of res.items) slugs.push(item.slug)
     if (res.items.length < perPage || slugs.length >= res.total) break
     page += 1
