@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test --test-concurrency=1 --test-timeout=60000 src/tests/requests.test.ts",
     "seed:admin": "tsx src/scripts/seed-admin.ts",
+    "seed:demo": "tsx src/scripts/seed-demo.ts",
     "seed:funnel": "tsx src/scripts/seed-funnel.ts",
     "verify:funnel": "tsx src/scripts/verify-funnel.ts"
   },

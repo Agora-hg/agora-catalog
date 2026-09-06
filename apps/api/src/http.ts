@@ -81,3 +81,18 @@ export function clientIp(req: FastifyRequest): string {
 export function likePattern(q: string): string {
   return `%${q.replace(/[%_\\]/g, '\\$&')}%`
 }
+
+export function asBool(value: unknown): boolean {
+  if (typeof value === 'boolean') return value
+  const s = asString(value).toLowerCase()
+  return s === '1' || s === 'true' || s === 'on' || s === 'yes'
+}
+
+export function todayMoscow(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Moscow',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
+}
