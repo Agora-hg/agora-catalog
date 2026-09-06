@@ -30,3 +30,16 @@ export function matchCategorySlugs(
   walk(seed, null)
   return [...slugs]
 }
+
+export function namesForSlugs(slugs: string[], seed: CategorySeed[] = CATEGORY_SEED): string[] {
+  const want = new Set(slugs)
+  const names: string[] = []
+  const walk = (nodes: CategorySeed[]) => {
+    for (const node of nodes) {
+      if (want.has(node.slug)) names.push(node.name)
+      if (node.children?.length) walk(node.children)
+    }
+  }
+  walk(seed)
+  return names
+}

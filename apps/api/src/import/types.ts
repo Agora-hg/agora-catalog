@@ -46,6 +46,8 @@ export type NormalizedOrg = {
   reviewsCount: number | null
   descriptionRaw: string | null
   yandexCategories: string[]
+  /** Товарные признаки с карточки Я.Карт (ключи features), без оплаты/доставки. */
+  featureTags: string[]
   nameNorm: string
   scrapedAt: Date | null
 }

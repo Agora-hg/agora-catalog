@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
+  featureTags,
   innFromPayload,
   normalizeInn,
   normalizeOrg,
@@ -78,11 +79,36 @@ describe('innFromPayload', () => {
   })
 })
 
+describe('featureTags', () => {
+  it('keeps product keys and drops payment/delivery/inn', () => {
+    const tags = featureTags({
+      'Бумажные пакеты': true,
+      Скотч: true,
+      Доставка: true,
+      'Способ оплаты': 'карта',
+      ИНН: '7701234567',
+      Лифт: true,
+    })
+    assert.deepEqual(tags, ['Бумажные пакеты', 'Скотч'])
+  })
+})
+
 describe('normalizeOrg', () => {
   it('requires oid and name', () => {
     const a = normalizeOrg({ oid: '', name: 'X' })
     assert.ok('error' in a)
     const b = normalizeOrg({ oid: '1' })
     assert.ok('error' in b)
+  })
+
+  it('copies product features into featureTags', () => {
+    const org = normalizeOrg({
+      oid: '1',
+      name: 'Пак',
+      features: { 'Бумажные пакеты': true, Доставка: true },
+    })
+    assert.ok(!('error' in org))
+    if ('error' in org) return
+    assert.deepEqual(org.featureTags, ['Бумажные пакеты'])
   })
 })

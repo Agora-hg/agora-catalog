@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { matchCategorySlugs } from '../src/import/map-categories.ts'
+import { matchCategorySlugs, namesForSlugs } from '../src/import/map-categories.ts'
 
 describe('matchCategorySlugs', () => {
   it('maps гофрокороба from rubrics + description', () => {
@@ -27,5 +27,16 @@ describe('matchCategorySlugs', () => {
       'Консалтинг логистики, контактов на карточке нет',
     ])
     assert.equal(slugs.length, 0)
+  })
+
+  it('maps from Yandex feature keys used as product tags', () => {
+    const slugs = matchCategorySlugs(['Бумажные пакеты', 'Скотч', 'Стрейч-пленка'])
+    assert.ok(slugs.includes('bumazhnye-pakety'))
+    assert.ok(slugs.includes('skotch'))
+    assert.ok(slugs.includes('strech-plenka'))
+  })
+
+  it('resolves slug list back to category names', () => {
+    assert.ok(namesForSlugs(['gofrokoroba']).includes('Гофрокороба'))
   })
 })
