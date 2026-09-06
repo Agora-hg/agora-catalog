@@ -15,7 +15,13 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 const API = process.env.CATALOG_API ?? 'https://agora-catalog.178.88.115.213.sslip.io/v1'
 const KEY = process.env.WAVESPEED_API_KEY
 const MODEL = process.env.WAVESPEED_MODEL ?? 'deepseek/deepseek-v3.2'
-const CONCURRENCY = Number(process.env.CONCURRENCY ?? 3)
+const CONCURRENCY = Number(process.env.CONCURRENCY ?? 1)
+/**
+ * Пауза между запросами. У провайдера жёсткий лимит частоты: на 8 потоках он
+ * отбил 649 запросов из 689, на 3 потоках с выдержкой прошло лишь 25 из 649.
+ * Один поток с паузой медленнее, но доходит до конца.
+ */
+const PAUSE_MS = Number(process.env.PAUSE_MS ?? 1200)
 if (!KEY) throw new Error('нет WAVESPEED_API_KEY')
 
 const args = process.argv.slice(2)
@@ -164,6 +170,7 @@ async function worker() {
       }
       results.push({ slug: c.slug, name: c.name, chars: text.length, text })
       done.add(c.slug)
+      await sleep(PAUSE_MS)
       writeFileSync(OUT, JSON.stringify({ model: MODEL, results }, null, 2), 'utf8')
       if (results.length % 50 === 0) process.stdout.write(results.length + ' ')
     } catch (err) {

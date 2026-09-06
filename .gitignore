@@ -7,3 +7,7 @@
 data/
 dist/
 node_modules/
+
+# временные файлы генерации описаний
+packages/db/.all-desc.*
+packages/db/.tmp*

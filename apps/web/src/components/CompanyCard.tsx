@@ -116,6 +116,14 @@ export function CompanyCard(props: {
       </div>
 
       {expanded && detail ? <Requisites company={detail} /> : null}
+
+      {/* Требование спеки владельца: строка должна быть на карточке. */}
+      <p className="claim">
+        Вы представитель этой компании?{' '}
+        <a href={`${moreHref}#claim`} data-analytics="claim_open" data-slug={company.slug}>
+          Сообщить об ошибке / обновить информацию
+        </a>
+      </p>
     </article>
   )
 }
