@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "import": "tsx src/import/cli.ts",
+    "test": "tsx --test --test-concurrency=1 --test-timeout=60000 src/tests/requests.test.ts",
     "start": "tsx src/index.ts",
     "dev": "tsx watch src/index.ts",
-    "test": "tsx --test --test-concurrency=1 --test-timeout=60000 src/tests/requests.test.ts",
     "bench": "tsx scripts/bench.ts",
     "seed": "tsx scripts/seed.ts",
     "typecheck": "tsc --noEmit",

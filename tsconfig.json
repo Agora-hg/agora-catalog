@@ -6,16 +6,12 @@
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "esModuleInterop": true,
     "verbatimModuleSyntax": true,
+    "types": ["node"],
     "allowImportingTsExtensions": true,
-    "types": [
-      "node"
-    ]
+    "paths": {
+      "@agora/db": ["./packages/db/src/index.ts"]
+    }
   },
-  "include": [
-    "src/**/*.ts",
-    "tests",
-    "test"
-  ]
+  "include": ["packages/*/src/**/*.ts", "apps/*/src/**/*.ts", "apps/*/test/**/*.ts"]
 }
