@@ -8,7 +8,23 @@ import type { Metadata } from 'next'
 export const revalidate = 900
 export const runtime = 'nodejs'
 
-export const metadata: Metadata = catalogMeta()
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}): Promise<Metadata> {
+  const sp = await searchParams
+  const meta = catalogMeta()
+  const hasFilterParams = Boolean(sp?.city || sp?.sort || sp?.page || sp?.type || sp?.q)
+  if (hasFilterParams) {
+    return {
+      ...meta,
+      robots: { index: false, follow: true },
+      alternates: { canonical: '/' },
+    }
+  }
+  return meta
+}
 
 export default async function HomePage({
   searchParams,
@@ -43,6 +59,7 @@ export default async function HomePage({
       description={description}
       breadcrumbs={[{ name: 'Каталог', href: '/' }]}
       categories={categories}
+      relatedSlugs={['gofrokoroba', 'strech-plenka', 'skotch', 'pallety', 'kurerskie-i-seyf-pakety']}
       list={list}
       citySlug={city}
       typeSlug={type}

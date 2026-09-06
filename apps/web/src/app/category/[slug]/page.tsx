@@ -29,12 +29,25 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+import { getCategoryContent } from '@/lib/category-content'
+
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params
+  const sp = await searchParams
   const categories = await fetchCategories()
   const category = findCategory(categories, slug)
   if (!category) return {}
-  return categoryMeta(category)
+  const city = firstParam(sp?.city)
+  const meta = categoryMeta(category, city)
+  const hasFilterParams = Boolean(sp?.type || sp?.sort || sp?.page || sp?.q)
+  if (hasFilterParams) {
+    return {
+      ...meta,
+      robots: { index: false, follow: true },
+      alternates: { canonical: categoryHref(slug, city) },
+    }
+  }
+  return meta
 }
 
 export default async function CategoryPage({ params, searchParams }: Props) {
@@ -58,20 +71,30 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     q,
   })
 
-  const title = category.seo_title?.trim() || `${category.name} — поставщики упаковки`
-  const description =
-    category.seo_description?.trim() ||
-    `Поставщики: ${category.name}. Проверенные компании в Москве, заявка без регистрации.`
+  const content = getCategoryContent(slug, city)
+  const isMoscow = city === 'moskva' || city === 'moscow'
+  const title = isMoscow
+    ? category.seo_title?.trim() || content.moscowH1
+    : category.seo_title && !category.seo_title.includes('в Москве')
+      ? category.seo_title.trim()
+      : content.h1
+  const description = isMoscow
+    ? category.seo_description?.trim() || content.moscowMetaDescription
+    : category.seo_description && !category.seo_description.includes('в Москве')
+      ? category.seo_description.trim()
+      : content.metaDescription
 
   return (
     <CatalogView
       title={title}
       description={description}
+      introText={content.introText}
       breadcrumbs={[
         { name: 'Каталог', href: '/' },
         { name: category.name, href: categoryHref(slug) },
       ]}
       categories={categories}
+      relatedSlugs={content.relatedSlugs}
       list={list}
       categorySlug={slug}
       citySlug={city}

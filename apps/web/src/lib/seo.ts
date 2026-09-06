@@ -12,7 +12,8 @@ function safeMetadataBase(site: string): URL {
     return new URL('http://localhost:3012')
   }
 }
-import { getSiteUrl } from './config'
+import { getSiteUrl, isPublicIndexable } from './config'
+import { getCategoryContent } from './category-content'
 import { categoryHref, companyHref } from './paths'
 import type { CategoryNode, CompanyDetail } from './types'
 
@@ -23,11 +24,12 @@ const DEFAULT_DESCRIPTION =
 
 export function defaultMetadata(): Metadata {
   const site = getSiteUrl()
+  const indexable = isPublicIndexable()
   return {
     metadataBase: safeMetadataBase(site),
     title: { default: DEFAULT_TITLE, template: `%s — ${SITE_NAME}` },
     description: DEFAULT_DESCRIPTION,
-    robots: { index: true, follow: true },
+    robots: indexable ? { index: true, follow: true } : { index: false, follow: false },
     openGraph: {
       type: 'website',
       locale: 'ru_RU',
@@ -48,14 +50,18 @@ export function catalogMeta(): Metadata {
 }
 
 export function categoryMeta(category: CategoryNode, city?: string): Metadata {
-  const title =
-    category.seo_title?.trim() ||
-    (city ? `${category.name} в Москве — поставщики упаковки` : `${category.name} — поставщики упаковки`)
-  const description =
-    category.seo_description?.trim() ||
-    (city
-      ? `${category.name} в Москве: проверенные поставщики. Оставьте заявку — подберём производителей.`
-      : `Поставщики: ${category.name}. Проверенные компании в Москве, заявка без регистрации.`)
+  const content = getCategoryContent(category.slug, city)
+  const isMoscow = city === 'moskva' || city === 'moscow'
+  const title = isMoscow
+    ? category.seo_title?.trim() || content.moscowTitle
+    : category.seo_title && !category.seo_title.includes('в Москве')
+      ? category.seo_title.trim()
+      : content.title
+  const description = isMoscow
+    ? category.seo_description?.trim() || content.moscowMetaDescription
+    : category.seo_description && !category.seo_description.includes('в Москве')
+      ? category.seo_description.trim()
+      : content.metaDescription
   return pageMeta({
     title,
     description,
@@ -105,11 +111,16 @@ function pageMeta(opts: {
   absoluteTitle: boolean
 }): Metadata {
   const canonical = opts.path.startsWith('http') ? opts.path : opts.path
+  const indexable = isPublicIndexable()
+  const defaultRobots: Metadata['robots'] = indexable
+    ? { index: true, follow: true }
+    : { index: false, follow: false }
+  const robots = !indexable ? { index: false, follow: false } : (opts.robots ?? defaultRobots)
   return {
     title: opts.absoluteTitle ? { absolute: opts.title } : opts.title,
     description: opts.description,
     alternates: { canonical },
-    robots: opts.robots,
+    robots,
     openGraph: {
       title: opts.title,
       description: opts.description,

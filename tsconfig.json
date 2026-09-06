@@ -13,5 +13,5 @@
       "@agora/db": ["./packages/db/src/index.ts"]
     }
   },
-  "include": ["packages/*/src/**/*.ts", "apps/*/src/**/*.ts", "apps/*/test/**/*.ts"]
+  "include": ["packages/*/src/**/*.ts", "apps/api/src/**/*.ts", "apps/api/test/**/*.ts", "apps/api/tests/**/*.ts"]
 }

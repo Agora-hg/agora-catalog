@@ -1,14 +1,17 @@
-import { getSiteUrl } from '@/lib/config'
+import { getSiteUrl, isPublicIndexable } from '@/lib/config'
 import type { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
   const site = getSiteUrl()
+  const indexable = isPublicIndexable()
+
   return {
     rules: [
       {
         userAgent: '*',
-        allow: '/',
-        disallow: ['/search', '/requests'],
+        ...(indexable
+          ? { allow: '/', disallow: ['/search', '/requests'] }
+          : { disallow: '/' }),
       },
     ],
     sitemap: `${site}/sitemap.xml`,
