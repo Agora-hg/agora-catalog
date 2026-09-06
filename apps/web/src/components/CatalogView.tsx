@@ -1,0 +1,92 @@
+import { DEFAULT_PER_PAGE } from '@/lib/config'
+import { catalogHref } from '@/lib/paths'
+import { breadcrumbJsonLd, collectionPageJsonLd, itemListJsonLd } from '@/lib/schema-org'
+import type { Breadcrumb, CategoryNode, CompanyListResponse } from '@/lib/types'
+import { Breadcrumbs } from './Breadcrumbs'
+import { CompanyCard } from './CompanyCard'
+import { Filters } from './Filters'
+import { JsonLd } from './JsonLd'
+import { Pagination } from './Pagination'
+import { RequestForm } from './RequestForm'
+
+export function CatalogView(props: {
+  title: string
+  description: string
+  breadcrumbs: Breadcrumb[]
+  categories: CategoryNode[]
+  list: CompanyListResponse
+  categorySlug?: string
+  citySlug?: string
+  typeSlug?: string
+  q?: string
+  sort?: 'recommended' | 'name'
+  pageUrl: string
+}) {
+  const { list, categorySlug, citySlug, typeSlug, q, sort = 'recommended' } = props
+  const recHref = catalogHref({ category: categorySlug, city: citySlug, type: typeSlug, q, sort: 'recommended' })
+  const nameHref = catalogHref({ category: categorySlug, city: citySlug, type: typeSlug, q, sort: 'name' })
+
+  return (
+    <>
+      <JsonLd data={breadcrumbJsonLd(props.breadcrumbs)} />
+      <JsonLd
+        data={collectionPageJsonLd({
+          name: props.title,
+          description: props.description,
+          url: props.pageUrl,
+        })}
+      />
+      <JsonLd data={itemListJsonLd(list.items, props.pageUrl)} />
+
+      <Breadcrumbs items={props.breadcrumbs} />
+      <h1 className="page-title">{props.title}</h1>
+      <p className="lead">{props.description}</p>
+
+      <div className="catalog">
+        <Filters
+          categories={props.categories}
+          categorySlug={categorySlug}
+          citySlug={citySlug}
+          typeSlug={typeSlug}
+        />
+
+        <section>
+          <div className="list-head">
+            <p className="count">
+              {list.total === 0 ? 'Ничего не найдено' : `Найдено: ${list.total}`}
+            </p>
+            <p className="sort">
+              <a href={recHref} className={sort === 'recommended' ? 'is-active' : undefined}>
+                Рекомендуемые
+              </a>
+              <a href={nameHref} className={sort === 'name' ? 'is-active' : undefined}>
+                По имени
+              </a>
+            </p>
+          </div>
+          {list.items.length === 0 ? (
+            <div className="empty">В этой выборке пока нет поставщиков. Измените фильтр или оставьте заявку.</div>
+          ) : (
+            <div className="cards">
+              {list.items.map((company) => (
+                <CompanyCard key={company.slug} company={company} citySlug={citySlug} />
+              ))}
+            </div>
+          )}
+          <Pagination
+            page={list.page}
+            perPage={list.per_page || DEFAULT_PER_PAGE}
+            total={list.total}
+            category={categorySlug}
+            city={citySlug}
+            type={typeSlug}
+            q={q}
+            sort={sort}
+          />
+        </section>
+
+        <RequestForm categorySlug={categorySlug} compact />
+      </div>
+    </>
+  )
+}

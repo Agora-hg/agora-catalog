@@ -124,10 +124,15 @@ export const companies = pgTable(
     productsTags: text('products_tags').array(),
     /**
      * Те же теги строкой — ТОЛЬКО чтобы попасть в поиск.
-     * Обязан заполняться везде, где меняются productsTags: импортёр, панель, обогащение.
-     * Почему не array_to_string прямо в generated-колонке: она помечена STABLE
+     *
+     * **Руками не заполнять: значение ставит триггер** `companies_products_text`
+     * (миграция 0004). Раньше здесь было правило «пиши оба поля», и его забыли
+     * дважды — импортёр и тесты каталога писали productsTags без productsText,
+     * после чего поиск по тегам молча перестал находить при зелёном tsc.
+     *
+     * Почему нельзя array_to_string прямо в generated-колонке: она помечена STABLE
      * (`provolatile = 's'`), а generated-выражение требует IMMUTABLE — Postgres падает
-     * с `generation expression is not immutable`. Проверено на живом движке, не гипотеза.
+     * с `generation expression is not immutable`. В триггере она разрешена.
      */
     productsText: text('products_text'),
 
@@ -415,9 +420,18 @@ export const eventDailyAggregates = pgTable(
     event: text('event').notNull(),
     companyId: uuid('company_id').references(() => companies.id, { onDelete: 'set null' }),
     categoryId: uuid('category_id').references(() => categories.id, { onDelete: 'set null' }),
-    query: text('query'),
+    /**
+     * Разрез агрегата: '' для обычных событий, 'query' для поисковых запросов,
+     * 'zero_query' для поисков без результатов. Форма продиктована TASK-011 —
+     * это её потребитель, я в первой версии угадал колонки неверно.
+     */
+    dimension: text('dimension').notNull().default(''),
+    dimensionValue: text('dimension_value').notNull().default(''),
     count: integer('count').notNull().default(0),
     uniqueVisitors: integer('unique_visitors').notNull().default(0),
+    uniqueSessions: integer('unique_sessions').notNull().default(0),
+    /** Произвольные подробности среза (TASK-011). */
+    extra: jsonb('extra'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [

@@ -17,23 +17,39 @@
  * Выбор по `DATABASE_URL`: есть и начинается с `postgres://` — идём в реальный сервер,
  * иначе поднимаем PGlite. Прикладной код разницы не видит.
  */
-import { drizzle as drizzlePg } from 'drizzle-orm/node-postgres'
+import { drizzle as drizzlePg, type NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { drizzle as drizzlePglite } from 'drizzle-orm/pglite'
-import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import * as schema from './schema.js'
 
 export * from './schema.js'
-export { CATEGORY_SEED } from './seed-categories.js'
+export { CATEGORY_SEED, seedCategories } from './seed-categories.js'
 export type { CategorySeed } from './seed-categories.js'
 
-const DEV_DATA_DIR = process.env.PGLITE_DIR ?? '.pgdata'
+/**
+ * Путь к dev-базе привязан к пакету, а НЕ к текущей директории.
+ * Относительный `.pgdata` ломался так: тесты запускаются из `apps/api`, и PGlite
+ * молча создавал там вторую пустую базу вместо общей — все тесты падали на
+ * truncate несуществующих таблиц, причём без внятной ошибки.
+ */
+const DEV_DATA_DIR =
+  process.env.PGLITE_DIR ?? join(dirname(fileURLToPath(import.meta.url)), '..', '.pgdata')
 
 /**
- * Общий базовый тип drizzle, а НЕ объединение двух драйверных.
- * На union'е `NodePgDatabase | PgliteDatabase` перегрузки схлопываются, и
- * `.returning({...})` перестаёт компилироваться: «Expected 0 arguments, but got 1».
+ * Тип базы — `NodePgDatabase`, и для PGlite мы приводим экземпляр к нему.
+ *
+ * Почему не union `NodePgDatabase | PgliteDatabase`: на нём схлопываются перегрузки
+ * и `.returning({...})` перестаёт компилироваться («Expected 0 arguments, but got 1»).
+ * Почему не общий базовый `PgDatabase`: у него `execute()` возвращает `unknown`,
+ * и каждый вызов `db.execute(sql\`...\`)` требует ручного приведения — таких мест
+ * в коде уже больше десятка.
+ *
+ * Приведение безопасно по факту: билдер запросов у драйверов одинаковый, а результат
+ * `execute()` у обоих — объект с полем `rows`, только у node-postgres в типе есть
+ * ещё rowCount и fields. Код читает исключительно `.rows`.
  */
-export type Db = PgDatabase<PgQueryResultHKT, typeof schema>
+export type Db = NodePgDatabase<typeof schema>
 
 let cached: Db | undefined
 let pgliteClient: { close: () => Promise<void> } | undefined
