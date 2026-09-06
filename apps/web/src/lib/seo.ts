@@ -1,4 +1,17 @@
 import type { Metadata } from 'next'
+
+/**
+ * new URL() на мусорном значении обрушивает всю сборку Next на этапе
+ * «Collecting page data», причём с сообщением, по которому не видно, какая
+ * переменная виновата. Лучше отдать заведомо валидный адрес и жить.
+ */
+function safeMetadataBase(site: string): URL {
+  try {
+    return new URL(site)
+  } catch {
+    return new URL('http://localhost:3012')
+  }
+}
 import { getSiteUrl } from './config'
 import { categoryHref, companyHref } from './paths'
 import type { CategoryNode, CompanyDetail } from './types'
@@ -11,7 +24,7 @@ const DEFAULT_DESCRIPTION =
 export function defaultMetadata(): Metadata {
   const site = getSiteUrl()
   return {
-    metadataBase: new URL(site),
+    metadataBase: safeMetadataBase(site),
     title: { default: DEFAULT_TITLE, template: `%s — ${SITE_NAME}` },
     description: DEFAULT_DESCRIPTION,
     robots: { index: true, follow: true },

@@ -6,17 +6,43 @@ function stripSlash(value: string): string {
   return value.replace(/\/$/, '')
 }
 
+/** Пустая строка — это тоже «не задано». `??` её не поймает. */
+function env(name: string): string | undefined {
+  const raw = process.env[name]
+  const trimmed = raw?.trim()
+  return trimmed ? trimmed : undefined
+}
+
+/**
+ * Публичный адрес сайта. Используется в metadataBase, каноникалах и sitemap.
+ *
+ * Порядок: NEXT_PUBLIC_SITE_URL → адрес деплоя от Vercel → localhost.
+ *
+ * Почему не просто `?? localhost`: сборка на Vercel падала целиком с
+ * `TypeError: Invalid URL, input: ''` на этапе «Collecting page data».
+ * Причина — переменные были помечены Sensitive, а такие Vercel отдаёт только
+ * в рантайме и на сборке подставляет ПУСТУЮ строку. `??` пустую строку
+ * не отлавливает, она уезжала в `new URL('')`.
+ *
+ * Правильная настройка — не помечать NEXT_PUBLIC_* как Sensitive (они всё равно
+ * попадают в бандл и секретами быть не могут). Но сборка не должна падать
+ * из-за настройки в панели, поэтому здесь есть запас.
+ */
 export function getSiteUrl(): string {
-  return stripSlash(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3012')
+  const explicit = env('NEXT_PUBLIC_SITE_URL')
+  if (explicit) return stripSlash(explicit)
+  const vercel = env('VERCEL_PROJECT_PRODUCTION_URL') ?? env('VERCEL_URL')
+  if (vercel) return `https://${stripSlash(vercel)}`
+  return 'http://localhost:3012'
 }
 
 /** Браузерный URL API. Форма заявки и события идут сюда напрямую, минуя хостинг фронта. */
 export function getPublicApiUrl(): string {
-  return stripSlash(process.env.NEXT_PUBLIC_API_URL ?? '')
+  return stripSlash(env('NEXT_PUBLIC_API_URL') ?? '')
 }
 
 export function getServerApiUrl(): string {
-  const server = process.env.API_URL?.trim()
+  const server = env('API_URL')
   if (server) return stripSlash(server)
   return getPublicApiUrl()
 }
