@@ -1,0 +1,31 @@
+# /etc/systemd/system/agora-catalog-api.service
+[Unit]
+Description=Agora Catalog V0 API
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/agora-catalog
+EnvironmentFile=/opt/agora-catalog/.env
+ExecStart=/usr/bin/node apps/api/dist/server.js
+Restart=always
+RestartSec=5
+User=www-data
+Group=www-data
+
+# Сервер общий: рядом 13 процессов PM2 чужих проектов, Postgres, MySQL, ollama.
+# Лимит жёсткий, чтобы утечка в нашем приложении не уронила соседей.
+MemoryMax=768M
+MemoryHigh=640M
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+StandardOutput=append:/var/log/agora-catalog/api.log
+StandardError=append:/var/log/agora-catalog/api.err.log
+
+[Install]
+WantedBy=multi-user.target
