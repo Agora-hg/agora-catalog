@@ -8,6 +8,17 @@ set -euo pipefail
 DIR=/var/backups/agora-catalog
 mkdir -p "$DIR"
 STAMP=$(date +%Y%m%d-%H%M)
-pg_dump -U agora_catalog -h 127.0.0.1 agora_catalog | gzip -9 > "$DIR/agora_catalog-$STAMP.sql.gz"
+CREDS=/opt/agora-catalog/.env.dbcreds
+if [ -f "$CREDS" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  . "$CREDS"
+  set +a
+fi
+if [ -n "${DATABASE_URL:-}" ]; then
+  pg_dump "$DATABASE_URL" | gzip -9 > "$DIR/agora_catalog-$STAMP.sql.gz"
+else
+  pg_dump -U agora_catalog -h 127.0.0.1 agora_catalog | gzip -9 > "$DIR/agora_catalog-$STAMP.sql.gz"
+fi
 find "$DIR" -name 'agora_catalog-*.sql.gz' -mtime +14 -delete
 echo "$(date -Is) дамп готов: $(du -h "$DIR/agora_catalog-$STAMP.sql.gz" | cut -f1)"

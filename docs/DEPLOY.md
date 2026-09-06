@@ -50,8 +50,9 @@ sudo -u postgres createdb agora_catalog -O agora_catalog
 
 # 2. код
 git clone https://github.com/Agora-hg/agora-catalog.git /opt/agora-catalog
-cd /opt/agora-catalog && npm ci && npm run build -w @agora/api
-cp .env.example .env && nano .env      # DATABASE_URL, CORS_ORIGINS, IP_HASH_SALT
+cd /opt/agora-catalog && npm ci
+# Сборки dist/ у API нет (noEmit): systemd стартует tsx apps/api/src/index.ts
+cp .env.example .env && nano .env      # DATABASE_URL, CORS_ORIGINS, IP_HASH_SALT, SESSION_SECRET
 
 # 3. схема и категории
 npm run -w @agora/db setup             # миграции + 72 категории
@@ -68,8 +69,9 @@ ln -s /etc/nginx/sites-available/agora-catalog /etc/nginx/sites-enabled/
 certbot certonly --webroot -w /var/www/html -d agora-catalog.178.88.115.213.sslip.io
 nginx -t && systemctl reload nginx
 
-# 6. бэкапы
-echo '15 4 * * * /opt/agora-catalog/deploy/backup.sh >> /var/log/agora-catalog/backup.log 2>&1' | crontab -
+# 6. бэкапы. На этом сервере crontab уже чужой — НЕ `echo | crontab -`,
+# это затрёт trek/tg-tool/fcor/agora-backend. Только дописать строку.
+(crontab -l 2>/dev/null; echo '15 4 * * * /opt/agora-catalog/deploy/backup.sh >> /var/log/agora-catalog/backup.log 2>&1') | crontab -
 ```
 
 ## CORS — не забыть, иначе фронт не увидит ответов

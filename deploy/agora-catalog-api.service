@@ -8,7 +8,8 @@ Wants=postgresql.service
 Type=simple
 WorkingDirectory=/opt/agora-catalog
 EnvironmentFile=/opt/agora-catalog/.env
-ExecStart=/usr/bin/node apps/api/dist/server.js
+# В репо нет сборки dist/: API стартует с tsx (как `npm run -w @agora/api start`).
+ExecStart=/opt/agora-catalog/node_modules/.bin/tsx apps/api/src/index.ts
 Restart=always
 RestartSec=5
 User=www-data
