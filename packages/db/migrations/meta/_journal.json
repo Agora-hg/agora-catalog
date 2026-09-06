@@ -36,6 +36,13 @@
       "when": 1788706812517,
       "tag": "0004_products_text_trigger",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788715974203,
+      "tag": "0005_aggregates_key_v2",
+      "breakpoints": true
     }
   ]
 }

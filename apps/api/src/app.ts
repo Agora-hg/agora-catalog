@@ -6,6 +6,9 @@ import Fastify from 'fastify'
 import { randomUUID } from 'node:crypto'
 import { registerAdmin } from './admin/routes.ts'
 import { registerCatalogRoutes } from './routes/catalog.ts'
+import { registerAnalyticsAdmin } from './admin/analytics-routes.ts'
+import { registerEventRoutes } from './events/routes.ts'
+import { catalogFixturePage } from './demo/catalog.ts'
 import type { AppContext } from './admin/session.ts'
 import { assertMinFillTime, assertRateLimit, honeypotFilled, RateLimiter } from './antispam.ts'
 import { isAppError } from './errors.ts'
@@ -21,6 +24,10 @@ export type BuildAppOpts = {
   logger?: boolean
   mailQueue: MailQueue
   operatorEmail: string
+  /** Соль для ip_hash в аналитике (TASK-011). IP в базу не пишем. */
+  ipHashSalt?: string
+  /** Демо-каталог для тестов аналитики (TASK-011): страницы без живых данных. */
+  fixture?: boolean
   formMinFillMs?: number
   rateLimiter?: RateLimiter
 }
@@ -149,6 +156,14 @@ export async function buildApp(opts: BuildAppOpts) {
     { prefix: '/v1' },
   )
   await registerAdmin(app, ctx)
+  registerEventRoutes(app, { ...ctx, ipHashSalt: opts.ipHashSalt ?? 'dev-salt' })
+  registerAnalyticsAdmin(app, ctx)
+
+  // Демо-страница каталога для тестов аналитики (TASK-011): проверяет сборщик
+  // событий без зависимости от живых данных в базе.
+  if (opts.fixture) {
+    app.get('/demo/catalog', async (_req, reply) => reply.type('text/html').send(catalogFixturePage()))
+  }
   return app
 }
 
