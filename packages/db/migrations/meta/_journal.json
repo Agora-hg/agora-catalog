@@ -29,6 +29,13 @@
       "when": 1788637441050,
       "tag": "0003_aggregates_unique_key",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788706812517,
+      "tag": "0004_products_text_trigger",
+      "breakpoints": true
     }
   ]
 }

@@ -5,6 +5,7 @@ import type { Db } from '@agora/db'
 import Fastify from 'fastify'
 import { randomUUID } from 'node:crypto'
 import { registerAdmin } from './admin/routes.ts'
+import { registerCatalogRoutes } from './routes/catalog.ts'
 import type { AppContext } from './admin/session.ts'
 import { assertMinFillTime, assertRateLimit, honeypotFilled, RateLimiter } from './antispam.ts'
 import { isAppError } from './errors.ts'
@@ -138,6 +139,18 @@ export async function buildApp(opts: BuildAppOpts) {
     return created
   })
 
+  // Каталог из TASK-008 монтируется под префиксом /v1 отдельным scoped-плагином —
+  // ровно так, как он был устроен в своей ветке. Регистрация в корне давала 404
+  // на GET /v1/companies и роняла тест мягкого удаления в админке.
+  await app.register(
+    async (scoped) => {
+      registerCatalogRoutes(scoped, opts.db)
+    },
+    { prefix: '/v1' },
+  )
   await registerAdmin(app, ctx)
   return app
 }
+
+// Реэкспорт для тестов каталога (TASK-008 держал его в своём app.ts)
+export { invalidateCatalogCache } from './cache.ts'

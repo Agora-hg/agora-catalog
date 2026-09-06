@@ -124,10 +124,15 @@ export const companies = pgTable(
     productsTags: text('products_tags').array(),
     /**
      * Те же теги строкой — ТОЛЬКО чтобы попасть в поиск.
-     * Обязан заполняться везде, где меняются productsTags: импортёр, панель, обогащение.
-     * Почему не array_to_string прямо в generated-колонке: она помечена STABLE
+     *
+     * **Руками не заполнять: значение ставит триггер** `companies_products_text`
+     * (миграция 0004). Раньше здесь было правило «пиши оба поля», и его забыли
+     * дважды — импортёр и тесты каталога писали productsTags без productsText,
+     * после чего поиск по тегам молча перестал находить при зелёном tsc.
+     *
+     * Почему нельзя array_to_string прямо в generated-колонке: она помечена STABLE
      * (`provolatile = 's'`), а generated-выражение требует IMMUTABLE — Postgres падает
-     * с `generation expression is not immutable`. Проверено на живом движке, не гипотеза.
+     * с `generation expression is not immutable`. В триггере она разрешена.
      */
     productsText: text('products_text'),
 

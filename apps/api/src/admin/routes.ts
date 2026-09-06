@@ -45,6 +45,7 @@ import {
   loginPage,
 } from './html.ts'
 import { getNavCounts } from './nav.ts'
+import { invalidateCatalogCache } from '../cache.ts'
 import {
   clearSessionCookie,
   loginWithPassword,
@@ -100,6 +101,28 @@ function sendError(req: FastifyRequest, reply: FastifyReply, err: unknown) {
 }
 
 export async function registerAdmin(app: FastifyInstance, ctx: AppContext) {
+
+  /**
+   * Сброс кэша каталога после записи в компании и категории.
+   *
+   * TASK-008 сделал кэш ответов на 10 минут и оставил в cache.ts прямое условие:
+   * «панель обязана вызвать invalidateCatalogCache() после правки компании».
+   * TASK-009 этого кода не видел и не вызвал — ветки писались параллельно.
+   * Результат обнаружился только на сборке: оператор помечает компанию удалённой,
+   * а публичный каталог продолжает её отдавать до десяти минут. То есть худший
+   * случай — «несуществующая» фирма ещё висит на витрине.
+   *
+   * Вешаем хуком, а не вызовом в каждом обработчике: обработчиков мутаций уже
+   * восемь, и следующий, кто добавит девятый, забудет про кэш точно так же.
+   */
+  app.addHook('onResponse', async (req, reply) => {
+    if (reply.statusCode >= 400) return
+    if (req.method === 'GET' || req.method === 'HEAD') return
+    const url = req.url.split('?')[0] ?? ''
+    if (url.startsWith('/admin/companies') || url.startsWith('/admin/categories')) {
+      invalidateCatalogCache()
+    }
+  })
   app.get('/admin/login', async (req, reply) => {
     const q = queryOf(req)
     return reply.type('text/html').send(loginPage(asString(q.error) || undefined))

@@ -25,7 +25,7 @@ import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core'
 import * as schema from './schema.js'
 
 export * from './schema.js'
-export { CATEGORY_SEED } from './seed-categories.js'
+export { CATEGORY_SEED, seedCategories } from './seed-categories.js'
 export type { CategorySeed } from './seed-categories.js'
 
 /**
