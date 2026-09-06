@@ -19,6 +19,8 @@
  */
 import { drizzle as drizzlePg } from 'drizzle-orm/node-postgres'
 import { drizzle as drizzlePglite } from 'drizzle-orm/pglite'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core'
 import * as schema from './schema.js'
 
@@ -26,7 +28,14 @@ export * from './schema.js'
 export { CATEGORY_SEED } from './seed-categories.js'
 export type { CategorySeed } from './seed-categories.js'
 
-const DEV_DATA_DIR = process.env.PGLITE_DIR ?? '.pgdata'
+/**
+ * Путь к dev-базе привязан к пакету, а НЕ к текущей директории.
+ * Относительный `.pgdata` ломался так: тесты запускаются из `apps/api`, и PGlite
+ * молча создавал там вторую пустую базу вместо общей — все тесты падали на
+ * truncate несуществующих таблиц, причём без внятной ошибки.
+ */
+const DEV_DATA_DIR =
+  process.env.PGLITE_DIR ?? join(dirname(fileURLToPath(import.meta.url)), '..', '.pgdata')
 
 /**
  * Общий базовый тип drizzle, а НЕ объединение двух драйверных.
