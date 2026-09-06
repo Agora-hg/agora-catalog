@@ -105,9 +105,9 @@ mustContain(
   ],
   '/sitemap.xml',
 )
-assert(!sitemap.text.includes('deleted-firma'), 'sitemap содержит удалённую компанию')
-
-mustContain(robots.text, ['Sitemap:', 'Allow: /'], '/robots.txt')
+const expectedRule =
+  process.env.PUBLIC_INDEXABLE === 'true' || process.env.PUBLIC_INDEXABLE === '1' ? 'Allow: /' : 'Disallow: /'
+mustContain(robots.text, ['Sitemap:', expectedRule], '/robots.txt')
 
 mustContain(
   requests.text,

@@ -36,7 +36,12 @@ export default async function CompanyPage({ params }: Props) {
   const cat = company.categories[0]
   const breadcrumbs = [
     { name: 'Каталог', href: '/' },
-    ...(cat ? [{ name: cat.name, href: categoryHref(cat.slug) }] : []),
+    ...(cat
+      ? [
+          { name: cat.name, href: categoryHref(cat.slug) },
+          { name: `${cat.name} в Москве`, href: categoryHref(cat.slug, 'moskva') },
+        ]
+      : []),
     { name: company.name, href: companyHref(company.slug) },
   ]
   const checked = formatCheckedAt(company.checked_at)
@@ -62,6 +67,11 @@ export default async function CompanyPage({ params }: Props) {
             {company.categories.map((c) => (
               <li key={c.slug}>
                 <a href={categoryHref(c.slug)}>{c.name}</a>
+              </li>
+            ))}
+            {company.categories.map((c) => (
+              <li key={`${c.slug}-moskva`}>
+                <a href={categoryHref(c.slug, 'moskva')}>{c.name} в Москве</a>
               </li>
             ))}
           </ul>

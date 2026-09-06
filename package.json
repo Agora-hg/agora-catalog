@@ -7,7 +7,7 @@
     "import": "tsx apps/api/src/import/cli.ts",
     "seed": "npm run -w @agora/db seed",
     "test": "npm run -w @agora/api test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && npm run -w @agora/web typecheck"
   },
   "devDependencies": {
     "@types/node": "^26.4.1",

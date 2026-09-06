@@ -1,5 +1,5 @@
 import { DEFAULT_PER_PAGE } from '@/lib/config'
-import { catalogHref } from '@/lib/paths'
+import { catalogHref, categoryHref } from '@/lib/paths'
 import { breadcrumbJsonLd, collectionPageJsonLd, itemListJsonLd } from '@/lib/schema-org'
 import type { Breadcrumb, CategoryNode, CompanyListResponse } from '@/lib/types'
 import { Breadcrumbs } from './Breadcrumbs'
@@ -12,8 +12,10 @@ import { RequestForm } from './RequestForm'
 export function CatalogView(props: {
   title: string
   description: string
+  introText?: string
   breadcrumbs: Breadcrumb[]
   categories: CategoryNode[]
+  relatedSlugs?: string[]
   list: CompanyListResponse
   categorySlug?: string
   citySlug?: string
@@ -22,9 +24,17 @@ export function CatalogView(props: {
   sort?: 'recommended' | 'name'
   pageUrl: string
 }) {
-  const { list, categorySlug, citySlug, typeSlug, q, sort = 'recommended' } = props
+  const { list, categorySlug, citySlug, typeSlug, q, sort = 'recommended', relatedSlugs = [] } = props
   const recHref = catalogHref({ category: categorySlug, city: citySlug, type: typeSlug, q, sort: 'recommended' })
   const nameHref = catalogHref({ category: categorySlug, city: citySlug, type: typeSlug, q, sort: 'name' })
+
+  const relatedCategories = relatedSlugs.map((slug) => {
+    const found = props.categories.find((c) => c.slug === slug)
+    return {
+      slug,
+      name: found ? found.name : slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+    }
+  })
 
   return (
     <>
@@ -40,7 +50,7 @@ export function CatalogView(props: {
 
       <Breadcrumbs items={props.breadcrumbs} />
       <h1 className="page-title">{props.title}</h1>
-      <p className="lead">{props.description}</p>
+      <p className="lead">{props.introText || props.description}</p>
 
       <div className="catalog">
         <Filters
@@ -83,6 +93,31 @@ export function CatalogView(props: {
             q={q}
             sort={sort}
           />
+          {relatedCategories.length > 0 ? (
+            <nav className="related-cats panel" style={{ marginTop: '1.5rem' }}>
+              <h3 style={{ fontSize: '1rem', margin: '0 0 0.5rem' }}>Сопутствующие категории упаковки</h3>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {relatedCategories.map((c) => (
+                  <li key={c.slug}>
+                    <a
+                      href={categoryHref(c.slug, citySlug)}
+                      style={{
+                        display: 'inline-block',
+                        padding: '0.35rem 0.75rem',
+                        borderRadius: '8px',
+                        background: 'var(--accent-soft)',
+                        color: 'var(--accent)',
+                        fontSize: '0.88rem',
+                        fontWeight: 500,
+                      }}
+                    >
+                      {c.name}{citySlug ? ' в Москве' : ''}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ) : null}
         </section>
 
         <RequestForm categorySlug={categorySlug} compact />

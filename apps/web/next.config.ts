@@ -22,6 +22,18 @@ const nextConfig: NextConfig = {
   // Title/description в <head> сразу, не стримом: иначе curl и часть роботов
   // видят пустой head. SEO — смысл продукта.
   htmlLimitedBots: /./,
+  async headers() {
+    const indexable = process.env.PUBLIC_INDEXABLE === 'true' || process.env.PUBLIC_INDEXABLE === '1'
+    if (!indexable) {
+      return [
+        {
+          source: '/:path*',
+          headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+        },
+      ]
+    }
+    return []
+  },
 }
 
 export default nextConfig

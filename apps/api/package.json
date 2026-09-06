@@ -14,10 +14,10 @@
     "acceptance": "tsx src/scripts/acceptance.ts",
     "import": "tsx src/import/cli.ts",
     "bench": "tsx scripts/bench.ts",
-    "seed": "tsx scripts/seed.ts",
     "seed:demo": "tsx src/scripts/seed-demo.ts",
     "seed:funnel": "tsx src/scripts/seed-funnel.ts",
-    "verify:funnel": "tsx src/scripts/verify-funnel.ts"
+    "verify:funnel": "tsx src/scripts/verify-funnel.ts",
+    "seo:descriptions": "tsx src/scripts/generate-descriptions.ts"
   },
   "dependencies": {
     "@agora/db": "*",

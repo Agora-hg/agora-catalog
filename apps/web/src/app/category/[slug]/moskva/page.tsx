@@ -29,12 +29,24 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+import { getCategoryContent } from '@/lib/category-content'
+
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params
+  const sp = await searchParams
   const categories = await fetchCategories()
   const category = findCategory(categories, slug)
   if (!category) return {}
-  return categoryMeta(category, MOSCOW.slug)
+  const meta = categoryMeta(category, MOSCOW.slug)
+  const hasFilterParams = Boolean(sp?.type || sp?.sort || sp?.page || sp?.q)
+  if (hasFilterParams) {
+    return {
+      ...meta,
+      robots: { index: false, follow: true },
+      alternates: { canonical: categoryHref(slug, MOSCOW.slug) },
+    }
+  }
+  return meta
 }
 
 export default async function CategoryMoscowPage({ params, searchParams }: Props) {
@@ -57,21 +69,22 @@ export default async function CategoryMoscowPage({ params, searchParams }: Props
     q,
   })
 
-  const title = category.seo_title?.trim() || `${category.name} в Москве — поставщики упаковки`
-  const description =
-    category.seo_description?.trim() ||
-    `${category.name} в Москве: проверенные поставщики. Оставьте заявку — подберём производителей.`
+  const content = getCategoryContent(slug, MOSCOW.slug)
+  const title = category.seo_title?.trim() || content.moscowH1
+  const description = category.seo_description?.trim() || content.moscowMetaDescription
 
   return (
     <CatalogView
       title={title}
       description={description}
+      introText={content.moscowIntroText}
       breadcrumbs={[
         { name: 'Каталог', href: '/' },
         { name: category.name, href: categoryHref(slug) },
         { name: 'Москва', href: categoryHref(slug, MOSCOW.slug) },
       ]}
       categories={categories}
+      relatedSlugs={content.relatedSlugs}
       list={list}
       categorySlug={slug}
       citySlug={MOSCOW.slug}

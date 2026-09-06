@@ -1,6 +1,10 @@
-/** ISR 15 минут — список компаний не рендерится на клиенте. */
 export const REVALIDATE_SECONDS = 900
 export const DEFAULT_PER_PAGE = 24
+
+/** Включение индексации поисковиками. В V0 строго false до привязки постоянного домена. */
+export function isPublicIndexable(): boolean {
+  return process.env.PUBLIC_INDEXABLE === 'true' || process.env.PUBLIC_INDEXABLE === '1'
+}
 
 function stripSlash(value: string): string {
   return value.replace(/\/$/, '')
