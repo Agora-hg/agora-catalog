@@ -42,6 +42,19 @@ export function CatalogView(props: {
       <h1 className="page-title">{props.title}</h1>
       <p className="lead">{props.description}</p>
 
+      {/*
+        Ряд доверия под заголовком. Число берём из ответа API, а не из константы:
+        каталог пополняется, и захардкоженная цифра рано или поздно начнёт врать.
+        Остальные пункты — то, что мы действительно делаем, без обещаний вроде
+        «лучшие цены», которых мы не проверяем.
+      */}
+      <ul className="trust">
+        <li>{list.total} поставщиков</li>
+        <li>Проверяем контакты вручную</li>
+        <li>Адреса и телефоны с карт</li>
+        <li>Бесплатно и без регистрации</li>
+      </ul>
+
       <div className="catalog">
         <Filters
           categories={props.categories}
