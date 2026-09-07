@@ -1,3 +1,4 @@
+import { getPublicApiUrl } from '@/lib/config'
 import { formatCheckedAt } from '@/lib/format'
 import { categoryHref, companyHref } from '@/lib/paths'
 import type { CompanyCard as CompanyCardType, CompanyDetail } from '@/lib/types'
@@ -40,12 +41,25 @@ export function CompanyCard(props: {
   const { company, citySlug, expanded, detail } = props
   const checked = formatCheckedAt(company.checked_at)
   const moreHref = companyHref(company.slug)
+  const iconBase = getPublicApiUrl()
 
   return (
     <article className="card" data-card-slug={company.slug}>
       <div className="card-head">
+        {/*
+          Логотип берём с сайта поставщика, но забирает его НАШ сервер
+          (`/companies/:slug/icon`), а не браузер посетителя: иначе 24 картинки
+          с 24 чужих доменов сливают IP каждого посетителя этим сайтам и ставят
+          скорость каталога в зависимость от их хостинга.
+          Когда логотипа нет, тот же эндпоинт рисует монограмму — картинка есть
+          всегда, «битого изображения» в вёрстке не появится.
+          Монограмма под картинкой остаётся фоном: видна, пока логотип грузится.
+        */}
         <span className={`mono ${monogramTone(company.name)}`} aria-hidden="true">
           {monogram(company.name)}
+          {iconBase ? (
+            <img src={`${iconBase}/companies/${encodeURIComponent(company.slug)}/icon`} alt="" width={48} height={48} loading="lazy" decoding="async" />
+          ) : null}
         </span>
         <div className="card-ident">
           <h2>

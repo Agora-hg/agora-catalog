@@ -6,6 +6,7 @@ import Fastify from 'fastify'
 import { randomUUID } from 'node:crypto'
 import { registerAdmin } from './admin/routes.ts'
 import { registerCatalogRoutes } from './routes/catalog.ts'
+import { registerIconRoute } from './routes/icon.ts'
 import { registerAnalyticsAdmin } from './admin/analytics-routes.ts'
 import { registerEventRoutes } from './events/routes.ts'
 import { catalogFixturePage } from './demo/catalog.ts'
@@ -163,6 +164,7 @@ export async function buildApp(opts: BuildAppOpts) {
   await app.register(
     async (scoped) => {
       registerCatalogRoutes(scoped, opts.db)
+      registerIconRoute(scoped, opts.db)
     },
     { prefix: '/v1' },
   )
