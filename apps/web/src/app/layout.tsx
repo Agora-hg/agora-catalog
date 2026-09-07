@@ -1,6 +1,7 @@
 import { ClientRuntime } from '@/components/ClientRuntime'
 import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
+import { YandexMetrika } from '@/components/YandexMetrika'
 import { getPublicApiUrl } from '@/lib/config'
 import { defaultMetadata } from '@/lib/seo'
 import type { Metadata } from 'next'
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
         <Footer />
         <ClientRuntime apiUrl={getPublicApiUrl()} path="" />
+        <YandexMetrika />
       </body>
     </html>
   )
