@@ -641,10 +641,27 @@ select:disabled {
   gap: var(--s-2);
 }
 
+/*
+ * Кнопки делят ряд поровну при любом их количестве.
+ *
+ * Раньше у главной кнопки стоял margin-left:auto, чтобы прижать её к правому
+ * краю. С тремя кнопками ряд выглядел заполненным, но у компаний без сайта
+ * их остаётся две — и посередине зияла дырка. Количество кнопок зависит
+ * от данных, значит вёрстка не имеет права на него опираться.
+ */
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--s-2);
+}
+.actions .btn {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+/* Главная кнопка чуть шире остальных — это приоритет, а не украшение. */
+.actions .btn-primary {
+  flex-grow: 1.4;
 }
 .btn {
   display: inline-flex;
@@ -681,7 +698,6 @@ select:disabled {
   border-color: var(--accent);
   color: #fff;
   font-weight: 600;
-  margin-left: auto;
 }
 .btn-primary:hover {
   background: var(--accent-hover);
@@ -702,13 +718,11 @@ select:disabled {
  * 44px — минимальная зона нажатия пальцем.
  */
 @media (max-width: 760px) {
+  /* 44px — минимальная зона нажатия пальцем. Деление ряда поровну задано
+     глобально в .actions, здесь только высота и отступы. */
   .btn {
     min-height: 44px;
-    flex: 1 1 0;
     padding: 0 0.6rem;
-  }
-  .btn-primary {
-    margin-left: 0;
   }
   /* Обрезка в две строки на узкой колонке оставляет от описания огрызок:
      влезает четыре-пять слов. Три строки читаются как мысль. */
