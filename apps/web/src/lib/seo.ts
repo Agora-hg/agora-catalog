@@ -22,6 +22,23 @@ const DEFAULT_TITLE = 'Каталог поставщиков упаковки в
 const DEFAULT_DESCRIPTION =
   'Проверенные поставщики упаковки в Москве: гофрокороба, плёнка, скотч, пакеты. Оставьте заявку — подберём компании без регистрации.'
 
+/**
+ * Коды подтверждения прав для Яндекс.Вебмастера и Google Search Console.
+ *
+ * Кладутся в переменные окружения, а не в код: у каждого домена свой код,
+ * и при переезде его придётся менять без пересборки логики. Пустые значения
+ * просто не выводят мета-тег.
+ */
+function verification(): Metadata['verification'] {
+  const yandex = process.env.YANDEX_VERIFICATION?.trim()
+  const google = process.env.GOOGLE_SITE_VERIFICATION?.trim()
+  if (!yandex && !google) return undefined
+  return {
+    ...(yandex ? { yandex } : {}),
+    ...(google ? { google } : {}),
+  }
+}
+
 export function defaultMetadata(): Metadata {
   const site = getSiteUrl()
   const indexable = isPublicIndexable()
@@ -30,6 +47,7 @@ export function defaultMetadata(): Metadata {
     title: { default: DEFAULT_TITLE, template: `%s — ${SITE_NAME}` },
     description: DEFAULT_DESCRIPTION,
     robots: indexable ? { index: true, follow: true } : { index: false, follow: false },
+    verification: verification(),
     openGraph: {
       type: 'website',
       locale: 'ru_RU',
