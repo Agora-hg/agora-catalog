@@ -65,6 +65,17 @@ export async function buildApp(opts: BuildAppOpts) {
   app.setErrorHandler((err, req, reply) => {
     const status = isAppError(err) ? err.statusCode : 500
     const message = isAppError(err) ? err.message : 'Внутренняя ошибка'
+    /**
+     * Непредвиденные ошибки обязаны попадать в лог с текстом и стеком.
+     *
+     * Без этого прод неотлаживаем: POST /v1/requests отдавал 500, а в логе была
+     * только строка «request completed statusCode 500» без причины — на поиск
+     * ушло больше времени, чем на саму починку. Ожидаемые ошибки (валидация,
+     * антиспам, 404) не логируем, это шум.
+     */
+    if (!isAppError(err)) {
+      req.log.error({ err, url: req.url, method: req.method }, 'необработанная ошибка')
+    }
     if (wantsHtml(req) && status < 500) {
       return reply.code(status).type('text/html').send(thanksPage('Не получилось', message))
     }
