@@ -617,9 +617,14 @@ select:disabled {
   color: var(--accent-hover);
   border-color: var(--accent-line);
 }
+/* Остаток категорий — не плашка, а тихая подпись: иначе она читается
+   как ещё одна категория с названием «+5». */
 .cats-more a {
   background: transparent;
   color: var(--muted);
+  padding-left: 0.15rem;
+  padding-right: 0.15rem;
+  font-weight: 600;
 }
 
 /* Низ прижат вниз: в сетке карточки разной высоты, иначе кнопки скачут. */
@@ -688,24 +693,48 @@ select:disabled {
   margin-left: 0;
 }
 
-@media (max-width: 520px) {
-  /* 44px — минимальная зона нажатия пальцем */
+/*
+ * Узкий экран: кнопки одной ровной строкой.
+ *
+ * У .btn-primary стоит margin-left:auto, и при переносе он оставлял пустоту
+ * слева, а кнопка уезжала к правому краю отдельным рядом — карточка выглядела
+ * разваленной. Здесь автоотступ снимается, кнопки делят ширину пополам.
+ * 44px — минимальная зона нажатия пальцем.
+ */
+@media (max-width: 760px) {
   .btn {
     min-height: 44px;
-    flex: 1 1 auto;
+    flex: 1 1 0;
+    padding: 0 0.6rem;
   }
   .btn-primary {
     margin-left: 0;
-    flex-basis: 100%;
+  }
+  /* Обрезка в две строки на узкой колонке оставляет от описания огрызок:
+     влезает четыре-пять слов. Три строки читаются как мысль. */
+  .desc {
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+  .card {
+    padding: var(--s-4);
+  }
+  .cats a,
+  .tag {
+    font-size: 0.76rem;
+    padding: 0.2rem 0.55rem;
   }
 }
 
+/* Строка про представителя — самая тихая в карточке: она нужна, но это
+   не то, зачем человек пришёл. */
 .claim {
   margin: var(--s-3) 0 0;
   padding-top: var(--s-3);
   border-top: 1px solid var(--line);
-  font-size: 0.8rem;
-  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #94a3b8;
 }
 .claim a {
   color: var(--muted);

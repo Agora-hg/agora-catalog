@@ -82,16 +82,23 @@ export function CompanyCard(props: {
 
       {company.description ? <p className="desc">{company.description}</p> : null}
 
+      {/*
+        Три категории, не пять.
+        При пяти чипсах плюс «ещё N» на узком экране получалось четыре ряда
+        плашек — они перевешивали и название, и описание, то есть то, ради чего
+        человек смотрит карточку. Остаток показываем текстом в той же строке,
+        а не отдельным чипсом.
+      */}
       {company.categories.length > 0 ? (
         <ul className="cats">
-          {company.categories.slice(0, 5).map((cat) => (
+          {company.categories.slice(0, 3).map((cat) => (
             <li key={cat.slug}>
               <a href={categoryHref(cat.slug, citySlug)}>{cat.name}</a>
             </li>
           ))}
-          {company.categories.length > 5 ? (
+          {company.categories.length > 3 ? (
             <li className="cats-more">
-              <a href={moreHref}>ещё {company.categories.length - 5}</a>
+              <a href={moreHref}>+{company.categories.length - 3}</a>
             </li>
           ) : null}
         </ul>
@@ -139,11 +146,17 @@ export function CompanyCard(props: {
 
       {expanded && detail ? <Requisites company={detail} /> : null}
 
-      {/* Требование спеки владельца: строка должна быть на карточке. */}
+      {/*
+        Требование спеки владельца: строка должна быть на карточке.
+        Полный текст «Вы представитель этой компании? Сообщить об ошибке /
+        обновить информацию» на узком экране занимал три ряда и перевешивал
+        карточку. Поэтому вопрос остаётся, а ссылка укорочена — смысл тот же,
+        а места вдвое меньше. Полная формулировка есть на странице компании.
+      */}
       <p className="claim">
-        Вы представитель этой компании?{' '}
+        Вы представитель компании?{' '}
         <a href={`${moreHref}#claim`} data-analytics="claim_open" data-slug={company.slug}>
-          Сообщить об ошибке / обновить информацию
+          Сообщить об ошибке
         </a>
       </p>
     </article>
