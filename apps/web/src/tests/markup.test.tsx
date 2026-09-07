@@ -24,8 +24,8 @@ describe('SSR-разметка карточки', () => {
     expect(markup).toContain('Сайт')
     expect(markup).toContain('/company/alinapak')
     expect(markup).toContain('https://alinapak.ru')
-    expect(markup).toContain('Вы представитель этой компании?')
-    expect(markup).toContain('Сообщить об ошибке / обновить информацию')
+    expect(markup).toContain('Вы представитель компании?')
+    expect(markup).toContain('Сообщить об ошибке')
     expect(markup).not.toContain('RAW_YANDEX_DESCRIPTION_DO_NOT_LEAK')
     expect(markup).not.toContain('MOQ')
     expect(markup).not.toContain('description_raw')
@@ -75,6 +75,8 @@ describe('фильтры и форма', () => {
   it('форма представителя идёт на /companies/{slug}/claims', () => {
     const markup = html(<ClaimForm slug="alinapak" />)
     expect(markup).toContain('action="https://api.example.ru/v1/companies/alinapak/claims"')
+    // На странице компании формулировка полная. Укорочена только строка
+    // в карточке списка: там она занимала три ряда и перевешивала содержимое.
     expect(markup).toContain('Вы представитель этой компании?')
   })
 })
