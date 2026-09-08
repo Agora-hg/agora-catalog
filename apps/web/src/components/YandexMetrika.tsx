@@ -1,4 +1,5 @@
 import Script from 'next/script'
+import { YandexMetrikaHit } from './YandexMetrikaHit'
 
 /**
  * Яндекс.Метрика.
@@ -9,6 +10,9 @@ import Script from 'next/script'
  * Почему `afterInteractive`: счётчик не должен задерживать первую отрисовку.
  * Страницы каталога отдаются готовым HTML ради поисковиков, и вешать в критический
  * путь чужой скрипт значит портить то, ради чего всё делалось.
+ *
+ * `ssr:true` — как в коде, который отдаёт кабинет Метрики для SSR-сайтов.
+ * Без него первый просмотр на серверном HTML иногда теряется.
  *
  * `webvisor` включён: для каталога полезно видеть, как человек ходит по фильтрам
  * и на чём останавливается. Это же и единственный способ понять, почему заявку
@@ -32,7 +36,7 @@ export function YandexMetrika() {
           for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
           k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
           (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-          ym(${id}, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true });
+          ym(${id}, "init", { ssr:true, clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true });
         `}
       </Script>
       {/* Резерв для посетителей с выключенным JS: без него Метрика их не увидит. */}
@@ -41,6 +45,7 @@ export function YandexMetrika() {
           <img src={`https://mc.yandex.ru/watch/${id}`} style={{ position: 'absolute', left: '-9999px' }} alt="" />
         </div>
       </noscript>
+      <YandexMetrikaHit id={id} />
     </>
   )
 }
